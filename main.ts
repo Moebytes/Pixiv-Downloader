@@ -349,7 +349,9 @@ if (!singleLock) {
       details.requestHeaders["Referer"] = "https://www.pixiv.net/"
       callback({requestHeaders: details.requestHeaders})
     })
-    session.defaultSession.webRequest.onBeforeRedirect({urls: ["https://*.pixiv.net/*"]}, async (details) => {
+    const webviewSession = session.fromPartition("persist:webview-partition")
+    webviewSession.webRequest.onBeforeRedirect({urls: ["https://*.pixiv.net/*"]}, async (details) => {
+      console.log(details.redirectURL)
       if (details.redirectURL.includes("https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback")) {
         website?.webContents.send("navigate-home")
         await functions.timeout(50)

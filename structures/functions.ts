@@ -137,13 +137,11 @@ export default class Functions {
     }
 
     public static getOauthURL = () => {
-        //const login_url = "https://app-api.pixiv.net/web/v1/login"
+        const login_url = "https://app-api.pixiv.net/web/v1/login"
         const code_verifier = crypto.randomBytes(32).toString("hex")
         ipcRenderer.invoke("update-code-verifier", code_verifier)
         const code_challenge = base64url.encode(crypto.createHash("sha256").update(code_verifier).digest())
-        const login_url = "https://app-api.pixiv.net/web/v1/users/auth/pixiv/start"
-        const parsedURL = `${login_url}?code_challenge=${code_challenge}&code_challenge_method=S256&client=pixiv-android&source=pixiv-android`
-        return `https://accounts.pixiv.net/login?prompt=select_account&return_to=${decodeURIComponent(parsedURL)}`
+        return `${login_url}?code_challenge=${code_challenge}&code_challenge_method=S256&client=pixiv-android`
     }
 
     public static bufferFileType = (buffer: Uint8Array | ArrayBuffer | Buffer) => {
