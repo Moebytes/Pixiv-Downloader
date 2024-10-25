@@ -15,7 +15,7 @@ import views from "../assets/icons/views.png"
 import Pixiv, {PixivIllust} from "pixiv.ts"
 import {PreviewContext, TranslateTitlesContext} from "../renderer"
 import path from "path"
-import "../styles/illustcontainer.less"
+import "./styles/illustcontainer.less"
 
 export interface IllustContainerProps {
     id: number

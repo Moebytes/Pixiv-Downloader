@@ -9,7 +9,7 @@ import clearAllButtonDark from "../assets/icons/clearAll-dark.png"
 import deleteAllButtonDark from "../assets/icons/deleteAll-dark.png"
 import deleteAllButtonDarkHover from "../assets/icons/deleteAll-dark-hover.png"
 import {ClearAllContext} from "../renderer"
-import "../styles/groupaction.less"
+import "./styles/groupaction.less"
 
 const GroupAction: React.FunctionComponent = (props) => {
     const {clearAll} = useContext(ClearAllContext)

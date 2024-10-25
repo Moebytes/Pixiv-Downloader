@@ -2,7 +2,7 @@ import {ipcRenderer} from "electron"
 import React, {useContext, useEffect, useState} from "react"
 import {Dropdown, DropdownButton} from "react-bootstrap"
 import {KindContext, FormatContext, TranslateContext, R18Context, ReverseContext, SpeedContext} from "../renderer"
-import "../styles/optionsbar.less"
+import "./styles/optionsbar.less"
 
 const OptionsBar: React.FunctionComponent = (props) => {
     const {kind, setKind} = useContext(KindContext)

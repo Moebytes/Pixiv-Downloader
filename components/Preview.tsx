@@ -2,7 +2,7 @@ import {ipcRenderer} from "electron"
 import React, {useContext, useEffect, useState} from "react"
 import {PreviewContext} from "../renderer"
 import functions from "../structures/functions"
-import "../styles/preview.less"
+import "./styles/preview.less"
 
 const Preview: React.FunctionComponent = (props) => {
     const [src, setSrc] = useState("")

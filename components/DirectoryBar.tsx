@@ -5,7 +5,7 @@ import React, {useContext, useEffect, useState} from "react"
 import folderButtonHover from "../assets/icons/folder-hover.png"
 import folderButton from "../assets/icons/folder.png"
 import {DirectoryContext} from "../renderer"
-import "../styles/directorybar.less"
+import "./styles/directorybar.less"
 
 const DirectoryBar: React.FunctionComponent = (props) => {
     const [defaultDir, setDefaultDir] = useState("")

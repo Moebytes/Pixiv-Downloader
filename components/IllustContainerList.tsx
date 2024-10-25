@@ -4,7 +4,7 @@ import IllustContainer from "./IllustContainer"
 import Reorder from "react-reorder"
 import {ClearAllContext} from "../renderer"
 import {PixivIllust} from "pixiv.ts"
-import "../styles/illustcontainerlist.less"
+import "./styles/illustcontainerlist.less"
 
 const IllustContainerList: React.FunctionComponent = (props) => {
     const {setClearAll} = useContext(ClearAllContext)

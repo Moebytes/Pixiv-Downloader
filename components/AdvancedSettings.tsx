@@ -1,9 +1,13 @@
 import {ipcRenderer} from "electron"
 import React, {useContext, useEffect, useRef, useState} from "react"
 import {Dropdown, DropdownButton} from "react-bootstrap"
-import {TemplateContext, FolderMapContext, SortContext, TargetContext, IllustLimitContext, MangaLimitContext, UgoiraLimitContext, TranslateTitlesContext, RestrictContext, MoeContext, BookmarksContext} from "../renderer"
+import {TemplateContext, FolderMapContext, SortContext, TargetContext, IllustLimitContext, MangaLimitContext, 
+UgoiraLimitContext, TranslateTitlesContext, RestrictContext, MoeContext, BookmarksContext, BookmarkFilterContext,
+AIContext, AdvSettingsContext, FlattenDirectoryContext} from "../renderer"
 import functions from "../structures/functions"
-import "../styles/advancedsettings.less"
+import checkbox from "../assets/icons/checkbox.png"
+import checkboxChecked from "../assets/icons/checkbox-checked.png"
+import "./styles/advancedsettings.less"
 
 const AdvancedSettings: React.FunctionComponent = (props) => {
     const {template, setTemplate} = useContext(TemplateContext)
@@ -17,15 +21,18 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const {restrict, setRestrict} = useContext(RestrictContext)
     const {moe, setMoe} = useContext(MoeContext)
     const {bookmarks, setBookmarks} = useContext(BookmarksContext)
-    const [visible, setVisible] = useState(false)
+    const {bookmarkFilter, setBookmarkFilter} = useContext(BookmarkFilterContext)
+    const {ai, setAI} = useContext(AIContext)
+    const {flattenDirectory, setFlattenDirectory} = useContext(FlattenDirectoryContext)
+    const {advSettings, setADVSettings} = useContext(AdvSettingsContext)
     const [cookieDeleted, setCookieDeleted] = useState(false)
 
     useEffect(() => {
         const showSettingsDialog = (event: any, update: any) => {
-            setVisible((prev) => !prev)
+            setADVSettings((prev: boolean) => !prev)
         }
         const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "settings") setVisible(false)
+            if (ignore !== "settings") setADVSettings(false)
         }
         ipcRenderer.on("show-settings-dialog", showSettingsDialog)
         ipcRenderer.on("close-all-dialogs", closeAllDialogs)
@@ -50,31 +57,38 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
             if (settings.restrict) setRestrict(settings.restrict)
             if (settings.moe) setMoe(settings.moe)
             if (settings.bookmarks) setBookmarks(settings.bookmarks)
+            if (settings.bookmarkFilter) setBookmarkFilter(settings.bookmarkFilter)
+            if (settings.ai) setAI(settings.ai)
+            if (settings.flattenDirectory) setFlattenDirectory(settings.flattenDirectory)
         }
     }
 
     useEffect(() => {
-        ipcRenderer.invoke("store-settings", {template, folderMap, sort, target, restrict, illustLimit, mangaLimit, ugoiraLimit, translateTitles, moe, bookmarks})
-        functions.logoDrag(!visible)
+        ipcRenderer.invoke("store-settings", {template, folderMap, sort, target, restrict, illustLimit, mangaLimit, 
+        ugoiraLimit, translateTitles, moe, bookmarks, bookmarkFilter, ai, flattenDirectory})
+        functions.logoDrag(!advSettings)
     })
 
     const ok = () => {
         functions.logoDrag(true)
-        setVisible(false)
+        setADVSettings(false)
     }
 
     const revert = () => {
-        setTemplate("{title}*_p{page}*")
+        setTemplate("{id}*_p{page}*")
         setFolderMap("")
         setSort("date_desc")
         setTarget("partial_match_for_tags")
         setRestrict("public")
-        setIllustLimit(100)
-        setMangaLimit(25)
-        setUgoiraLimit(10)
+        setIllustLimit(1000)
+        setMangaLimit(100)
+        setUgoiraLimit(100)
         setTranslateTitles(false)
         setMoe(false)
         setBookmarks(0)
+        setBookmarkFilter(0)
+        setAI(false)
+        setFlattenDirectory(false)
     }
 
     const changeTemplate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +104,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const changeIllustLimit = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
         if (value.includes(".")) return
-        if (value.length > 3) return
+        if (value.length > 5) return
         if (Number.isNaN(Number(value))) return
         setIllustLimit(value)
     }
@@ -98,7 +112,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const changeIllustLimitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
             setIllustLimit((prev: any) => {
-                if (Number(prev) + 1 > 999) return Number(prev)
+                if (Number(prev) + 1 > 99999) return Number(prev)
                 return Number(prev) + 1
             })
         } else if (event.key === "ArrowDown") {
@@ -112,7 +126,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const changeMangaLimit = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
         if (value.includes(".")) return
-        if (value.length > 3) return
+        if (value.length > 5) return
         if (Number.isNaN(Number(value))) return
         setMangaLimit(value)
     }
@@ -120,7 +134,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const changeMangaLimitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
             setMangaLimit((prev: any) => {
-                if (Number(prev) + 1 > 999) return Number(prev)
+                if (Number(prev) + 1 > 99999) return Number(prev)
                 return Number(prev) + 1
             })
         } else if (event.key === "ArrowDown") {
@@ -134,7 +148,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const changeUgoiraLimit = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value
         if (value.includes(".")) return
-        if (value.length > 3) return
+        if (value.length > 5) return
         if (Number.isNaN(Number(value))) return
         setUgoiraLimit(value)
     }
@@ -142,7 +156,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     const changeUgoiraLimitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
             setUgoiraLimit((prev: any) => {
-                if (Number(prev) + 1 > 999) return Number(prev)
+                if (Number(prev) + 1 > 99999) return Number(prev)
                 return Number(prev) + 1
             })
         } else if (event.key === "ArrowDown") {
@@ -159,7 +173,7 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
         setTimeout(() => {setCookieDeleted(false)}, 2000)
     }
 
-    if (visible) {
+    if (advSettings) {
         return (
             <section className="settings-dialog">
                 <div className="settings-dialog-box">
@@ -199,7 +213,19 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
                                 </DropdownButton>
                             </div>
                             <div className="settings-row">
-                                <p className="settings-text">Bookmarks: </p>
+                                <p className="settings-text">Above Bookmarks: </p>
+                                <DropdownButton title={bookmarkFilter} drop="down">
+                                    <Dropdown.Item active={bookmarkFilter === 0} onClick={() => setBookmarkFilter(0)}>0</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 50} onClick={() => setBookmarkFilter(50)}>50</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 100} onClick={() => setBookmarkFilter(100)}>100</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 300} onClick={() => setBookmarkFilter(300)}>300</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 500} onClick={() => setBookmarkFilter(500)}>500</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 1000} onClick={() => setBookmarkFilter(1000)}>1000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 3000} onClick={() => setBookmarkFilter(3000)}>3000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 5000} onClick={() => setBookmarkFilter(5000)}>5000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarkFilter === 10000} onClick={() => setBookmarkFilter(10000)}>10000</Dropdown.Item>
+                                </DropdownButton>
+                                <p className="settings-text">Exact Bookmarks: </p>
                                 <DropdownButton title={bookmarks} drop="down">
                                     <Dropdown.Item active={bookmarks === 0} onClick={() => setBookmarks(0)}>0</Dropdown.Item>
                                     <Dropdown.Item active={bookmarks === 50} onClick={() => setBookmarks(50)}>50</Dropdown.Item>
@@ -213,6 +239,18 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
                                 </DropdownButton>
                             </div>
                             <div className="settings-row">
+                                <p className="settings-text">Translate Titles:</p>
+                                <img className="settings-checkbox-img" src={translateTitles ? checkboxChecked : checkbox} onClick={() => setTranslateTitles((prev: boolean) => !prev)}/>
+                                <p className="settings-text" style={{marginLeft: "20px"}}>Flatten Directory:</p>
+                                <img className="settings-checkbox-img" src={flattenDirectory ? checkboxChecked : checkbox} onClick={() => setFlattenDirectory((prev: boolean) => !prev)}/>
+                            </div>
+                            <div className="settings-row">
+                                <p className="settings-text">Pixiv.moe:</p>
+                                <img className="settings-checkbox-img" src={moe ? checkboxChecked : checkbox} onClick={() => setMoe((prev: boolean) => !prev)}/>
+                                <p className="settings-text" style={{marginLeft: "20px"}}>AI:</p>
+                                <img className="settings-checkbox-img" src={ai ? checkboxChecked : checkbox} onClick={() => setAI((prev: boolean) => !prev)}/>
+                            </div>
+                            <div className="settings-row">
                                 <p className="settings-text">Illust Limit: </p>
                                 <input className="settings-input" type="text" spellCheck="false" value={illustLimit} onChange={changeIllustLimit} onKeyDown={changeIllustLimitKey}/>
                             </div>
@@ -223,14 +261,6 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
                             <div className="settings-row">
                                 <p className="settings-text">Ugoira Limit: </p>
                                 <input className="settings-input" type="text" spellCheck="false" value={ugoiraLimit} onChange={changeUgoiraLimit} onKeyDown={changeUgoiraLimitKey}/>
-                            </div>
-                            <div className="settings-row">
-                                <p className="settings-text">Translate Titles:</p>
-                                <input className="settings-checkbox" type="checkbox" checked={translateTitles} onClick={() => setTranslateTitles((prev: boolean) => !prev)}/>
-                            </div>
-                            <div className="settings-row">
-                                <p className="settings-text">Pixiv.moe:</p>
-                                <input className="settings-checkbox" type="checkbox" checked={moe} onClick={() => setMoe((prev: boolean) => !prev)}/>
                             </div>
                             <div className="settings-row">
                                 <button onClick={deleteCookie} className="cookie-button">Delete Cookies</button>

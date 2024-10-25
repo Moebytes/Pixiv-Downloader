@@ -19,7 +19,7 @@ import externalButton from "../assets/icons/externalButton.png"
 import externalButtonHover from "../assets/icons/externalButton-hover.png"
 import refreshButton from "../assets/icons/refreshButton.png"
 import refreshButtonHover from "../assets/icons/refreshButton-hover.png"
-import "../styles/browsertitlebar.less"
+import "./styles/browsertitlebar.less"
 
 const BrowserTitleBar: React.FunctionComponent = (props) => {
     let [hoverClose, setHoverClose] = useState(false)

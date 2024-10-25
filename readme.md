@@ -16,7 +16,7 @@ This application lets you download images/ugoiras from Pixiv in bulk.
 
 ### Output Template
 
-You can customize the output file names. The default is `{title}*_p{page}*`. Adding slashes will create subfolders,
+You can customize the output file names. The default is `{id}*_p{page}*`. Adding slashes will create subfolders,
 e.g. `{artist}/{title}`. Any asterisks will be removed, as they are a special option for page numbers. The following replacements are available:
 
 {title} - The title of the illustration. It will be translated if "translate titles" is enabled. \

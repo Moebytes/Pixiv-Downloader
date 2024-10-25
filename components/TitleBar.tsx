@@ -21,7 +21,7 @@ import lightButtonHover from "../assets/icons/light-hover.png"
 import webButton from "../assets/icons/webButton.png"
 import webButtonHover from "../assets/icons/webButton-hover.png"
 import pack from "../package.json"
-import "../styles/titlebar.less"
+import "./styles/titlebar.less"
 
 const TitleBar: React.FunctionComponent = (props) => {
     const [hoverClose, setHoverClose] = useState(false)
@@ -98,6 +98,7 @@ const TitleBar: React.FunctionComponent = (props) => {
             document.documentElement.style.setProperty("--version-accept-text", "#5142ff")
             document.documentElement.style.setProperty("--version-reject", "#090409")
             document.documentElement.style.setProperty("--version-reject-text", "#463bbe")
+            document.documentElement.style.setProperty("--cookie-text", "#3543ff")
             setTheme("dark")
             ipcRenderer.invoke("save-theme", "dark")
             ipcRenderer.invoke("update-color", "dark")
@@ -121,6 +122,7 @@ const TitleBar: React.FunctionComponent = (props) => {
             document.documentElement.style.setProperty("--version-accept-text", "black")
             document.documentElement.style.setProperty("--version-reject", "#463bbe")
             document.documentElement.style.setProperty("--version-reject-text", "black")
+            document.documentElement.style.setProperty("--cookie-text", "black")
             setTheme("light")
             ipcRenderer.invoke("save-theme", "light")
             ipcRenderer.invoke("update-color", "light")

@@ -2,7 +2,7 @@ import {ipcRenderer, clipboard} from "electron"
 import React, {useEffect, useState, useRef, useContext} from "react"
 import {PreviewContext} from "../renderer"
 import functions from "../structures/functions"
-import "../styles/contextmenu.less"
+import "./styles/contextmenu.less"
 
 const ContextMenu: React.FunctionComponent = (props) => {
     const {previewVisible} = useContext(PreviewContext)

@@ -13,7 +13,7 @@ import imageSize from "image-size"
 import axios from "axios"
 import fs from "fs"
 import {URL} from "url"
-require('@electron/remote/main').initialize()
+require("@electron/remote/main").initialize()
 
 let webpPath = path.join(app.getAppPath(), "./node_modules/pixiv.ts/webp")
 if (!fs.existsSync(webpPath)) webpPath = path.join(__dirname, "../webp")
@@ -22,6 +22,8 @@ let window: Electron.BrowserWindow | null
 let website: Electron.BrowserWindow | null
 autoUpdater.autoDownload = false
 const store = new Store()
+
+let pixiv = null as unknown as Pixiv
 
 const active: Array<{id: number, dest: string, frameFolder?: string, action: null | "kill"}> = []
 let code_verifier = ""
@@ -42,7 +44,7 @@ ipcMain.handle("update-code-verifier", (event, verifier) => {
 ipcMain.handle("translate-title", async (event, title) => {
   const refreshToken = store.get("refreshToken", "") as string
   if (!refreshToken) return title
-  const pixiv = await Pixiv.refreshLogin(refreshToken)
+  if (!pixiv) pixiv = await Pixiv.refreshLogin(refreshToken)
   return pixiv.util.translateTitle(title)
 })
 
@@ -54,7 +56,7 @@ ipcMain.handle("download-url", (event, url) => {
 
 const openWebsite = async () => {
   if (!website) {
-    website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, backgroundColor: "#ffffff", center: false, webPreferences: {nodeIntegration: true, webviewTag: true, contextIsolation: false}})
+    website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, roundedCorners: false, backgroundColor: "#ffffff", center: false, webPreferences: {nodeIntegration: true, webviewTag: true, contextIsolation: false}})
     await website.loadFile(path.join(__dirname, "website.html"))
     require("@electron/remote/main").enable(website.webContents)
     website?.on("closed", () => {
@@ -144,11 +146,11 @@ ipcMain.handle("download-error", async (event, info) => {
   window?.webContents.send("download-error", info)
 })
 
-ipcMain.handle("download", async (event, info: {id: number, illust: PixivIllust, dest: string, format: string, speed: number, reverse: boolean, template: string, translateTitles: boolean}) => {
+const download = async (info: {id: number, illust: PixivIllust, dest: string, format: string, speed: number, reverse: boolean, template: string, translateTitles: boolean}) => {
   const refreshToken = store.get("refreshToken", "") as string
   if (!refreshToken) return window?.webContents.send("download-error", "login")
-  const pixiv = await Pixiv.refreshLogin(refreshToken)
-  const {id, illust, dest, format, speed, reverse, template, translateTitles} = info
+  if (!pixiv) pixiv = await Pixiv.refreshLogin(refreshToken)
+  let {id, illust, dest, format, speed, reverse, template, translateTitles} = info
   window?.webContents.send("download-started", {id, illust})
   const folder = path.dirname(dest)
   if (!fs.existsSync(folder)) fs.mkdirSync(folder, {recursive: true})
@@ -200,19 +202,36 @@ ipcMain.handle("download", async (event, info: {id: number, illust: PixivIllust,
     active.push({id, dest, action: null})
     for (let i = 0; i < illust.meta_pages.length; i++) {
       const name = await functions.parseTemplate(illust, template.replace(/^.*\//, ""), i, translateTitles, refreshToken)
-      const image = illust.meta_pages[i].image_urls.large ? illust.meta_pages[i].image_urls.large : illust.meta_pages[i].image_urls.medium
-      const pageDest = `${dest}/${name}.${format}`
+      let image = illust.meta_pages[i].image_urls.original ? illust.meta_pages[i].image_urls.original : illust.meta_pages[i].image_urls.large
+      if (!image) image = illust.meta_pages[i].image_urls.medium
       const arrayBuffer = await axios.get(image, {responseType: "arraybuffer", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data)
+      const fileType = functions.bufferFileType(arrayBuffer)
+      const pageDest = `${dest}/${name}.${fileType[0].extension?.replace("jpeg", "jpg")}`
       fs.writeFileSync(pageDest, Buffer.from(arrayBuffer, "binary"))
     }
   } else {
     // Download Illust
     active.push({id, dest, action: null})
-    const url = illust.image_urls.large ? illust.image_urls.large : illust.image_urls.medium
+    let url = illust.meta_single_page.original_image_url ? illust.meta_single_page.original_image_url : illust.image_urls.large
+    if (!url) url = illust.image_urls.medium
     const arrayBuffer = await axios.get(url, {responseType: "arraybuffer", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data)
+    const fileType = functions.bufferFileType(arrayBuffer)
+    dest = path.join(path.dirname(dest), `${path.basename(dest, path.extname(dest))}.${fileType[0].extension?.replace("jpeg", "jpg")}`)
     fs.writeFileSync(dest, Buffer.from(arrayBuffer, "binary"))
   }
   window?.webContents.send("download-ended", {id, output: dest})
+}
+
+ipcMain.handle("download", async (event, items: any) => {
+  let promises = [] as any
+  items.map((item: any) => {
+    const promise = new Promise<void>(async (resolve) => {
+      await download(item)
+      resolve()
+    })
+    promises.push(promise)
+  })
+  await Promise.all(promises)
 })
 
 ipcMain.handle("init-settings", () => {
@@ -307,7 +326,7 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 800, height: 650, minWidth: 720, minHeight: 450, frame: false, backgroundColor: "#656ac2", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
+    window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, roundedCorners: false, backgroundColor: "#656ac2", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
     window.loadFile(path.join(__dirname, "index.html"))
     window.removeMenu()
     if (process.platform === "darwin") {
@@ -345,6 +364,7 @@ if (!singleLock) {
             "redirect_uri": "https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback"
           }), {headers: {"user-agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}}).then((r) => r.data.refresh_token)
         store.set("refreshToken", refreshToken)
+        console.log(refreshToken)
       }
     })
   })
