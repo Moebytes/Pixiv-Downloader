@@ -351,7 +351,6 @@ if (!singleLock) {
     })
     const webviewSession = session.fromPartition("persist:webview-partition")
     webviewSession.webRequest.onBeforeRedirect({urls: ["https://*.pixiv.net/*"]}, async (details) => {
-      console.log(details.redirectURL)
       if (details.redirectURL.includes("https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback")) {
         website?.webContents.send("navigate-home")
         await functions.timeout(50)
@@ -366,7 +365,6 @@ if (!singleLock) {
             "redirect_uri": "https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback"
           }), {headers: {"user-agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}}).then((r) => r.data.refresh_token)
         store.set("refreshToken", refreshToken)
-        console.log(refreshToken)
       }
     })
   })

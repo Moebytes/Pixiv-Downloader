@@ -1,6 +1,6 @@
 {
   "name": "pixiv-downloader",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "An app that downloads images/ugoira from Pixiv",
   "main": "dist/main.js",
   "scripts": {
@@ -113,7 +113,7 @@
     "electron-updater": "^4.3.5",
     "image-size": "^0.5.5",
     "magic-bytes.js": "^1.10.0",
-    "pixiv.ts": "^0.6.9",
+    "pixiv.ts": "^0.7.3",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.3",
     "react-dom": "^17.0.1",
