@@ -195,7 +195,7 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
   } else if (illust.type === "novel") {
     // Download Novel
     const text = await pixiv.novel.text({novel_id: illust.id})
-    fs.writeFileSync(dest, text.novel_text)
+    fs.writeFileSync(dest, text.content)
   } else if (illust.meta_pages?.length) {
     // Download Manga
     if (!fs.existsSync(dest)) fs.mkdirSync(dest, {recursive: true})
