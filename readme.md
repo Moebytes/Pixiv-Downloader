@@ -46,13 +46,13 @@ For better accuracy provide the tags in Japanese, but they will be automatically
 
 ### Installation
 
-Download the installer from the [releases](https://github.com/Moebits/Pixiv-Downloader/releases) tab.
+Download the installer from the [releases](https://github.com/Moebytes/Pixiv-Downloader/releases) tab.
 
 ### MacOS
 
 On MacOS unsigned applications won't open, run this to remove the quarantine flag.
 ```
-xattr -d com.apple.quarantine /Applications/Pixiv\ Downloader.app
+xattr -d com.apple.quarantine "/Applications/Pixiv Downloader.app"
 ```
 
 ### Bugs and Feature Requests
@@ -61,5 +61,6 @@ Open an issue on my GitHub repository.
 
 ### Also See
 
-- [Waifu2x-GUI](https://github.com/Moebits/Waifu2x-GUI) for upscaling images
-- [Photo Viewer](https://github.com/Moebits/Photo-Viewer) for editing images
+- [Waifu2x-GUI](https://github.com/Moebytes/Waifu2x-GUI)
+- [Photo Viewer](https://github.com/Moebytes/Photo-Viewer)
+
