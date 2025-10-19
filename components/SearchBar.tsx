@@ -66,7 +66,7 @@ const SearchBar: React.FunctionComponent = (props) => {
 
     const updateFormat = (illust: PixivIllust | PixivNovel) => {
         if (illust.type === "ugoira") {
-            if (format !== "gif" || format !== "zip") {
+            if (format !== "gif" && format !== "webp" && format !== "zip") {
                 setKind("ugoira")
                 setFormat("gif")
                 return "gif"
@@ -78,7 +78,7 @@ const SearchBar: React.FunctionComponent = (props) => {
                 return "txt"
             }
         } else {
-            if (format !== "png" || format !== "jpg") {
+            if (format !== "png" && format !== "jpg") {
                 setKind("illust")
                 setFormat("png")
                 return "png"

@@ -14,8 +14,10 @@ const App: React.FunctionComponent = () => {
         const ready = async () => {
             webview?.setZoomFactor(0.8)
             const refreshToken = await ipcRenderer.invoke("get-refresh-token")
+            console.log(refreshToken)
             if (!refreshToken) {
                 const loginURL = functions.getOauthURL()
+                console.log(loginURL)
                 webview.loadURL(loginURL)
             }
             webview?.removeEventListener("dom-ready", ready)

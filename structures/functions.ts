@@ -144,8 +144,8 @@ export default class Functions {
         return `${login_url}?code_challenge=${code_challenge}&code_challenge_method=S256&client=pixiv-android`
     }
 
-    public static bufferFileType = (buffer: Uint8Array | ArrayBuffer | Buffer) => {
-        buffer = Buffer.from(buffer)
+    public static bufferFileType = (buff: Uint8Array | ArrayBuffer | Buffer) => {
+        const buffer = Buffer.from(new Uint8Array(buff))
         const majorBrand = buffer.toString("utf8", 8, 12)
         if (majorBrand === "avif" || majorBrand === "avis") {
             return [{typename: "avif", mime: "image/avif", extension: "avif"}]

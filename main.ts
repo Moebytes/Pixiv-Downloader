@@ -156,41 +156,18 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
   if (!fs.existsSync(folder)) fs.mkdirSync(folder, {recursive: true})
   if (illust.type === "ugoira") {
     // Download Ugoira
-    const metadata = await pixiv.ugoira.get(illust.id).then((r) => r.ugoira_metadata)
-    const zipUrl = metadata.zip_urls.medium
     if (format === "gif" || format === "webp") {
-      const frameFolder = path.join(folder, illust.id.toString())
-      if (!fs.existsSync(frameFolder)) fs.mkdirSync(frameFolder, {recursive: true})
-      active.push({id, dest, frameFolder, action: null})
-      const writeStream = await axios.get(zipUrl, {responseType: "stream", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data.pipe(unzip.Extract({path: frameFolder})))
-      await pixiv.util.awaitStream(writeStream)
-      let frames = fs.readdirSync(frameFolder)
-      frames = frames.sort(new Intl.Collator(undefined, {numeric: true, sensitivity: "base"}).compare)
-      const constraint = speed > 1 ? frames.length / speed : frames.length
-      let step = Math.ceil(frames.length / constraint)
-      let frameArray: string[] = []
-      let delayArray: number[] = []
-      for (let i = 0; i < frames.length; i += step) {
-          if (frames[i].slice(-5) === ".webp") continue
-          if (!metadata.frames[i]) break
-          frameArray.push(`${frameFolder}/${frames[i]}`)
-          delayArray.push(metadata.frames[i].delay)
-      }
-      if (speed < 1) delayArray = delayArray.map((n) => n / speed)
-      if (reverse) {
-          frameArray = frameArray.reverse()
-          delayArray = delayArray.reverse()
-      }
       if (format === "gif") {
-        await pixiv.util.encodeGif(frameArray, delayArray, dest)
+        let dest = path.join(path.dirname(info.dest), path.basename(info.dest, path.extname(info.dest))) + ".gif"
+        await pixiv.util.downloadUgoira(illust, dest, {speed: speed + 4, reverse})
       } else if (format === "webp") {
-        await pixiv.util.encodeAnimatedWebp(frameArray, delayArray, dest, webpPath)
+        let dest = path.join(path.dirname(info.dest), path.basename(info.dest, path.extname(info.dest))) + ".webp"
+        await pixiv.util.downloadUgoira(illust, dest, {speed: speed + 4, reverse, webp: true, webpPath})
       }
-      functions.removeDirectory(frameFolder)
     } else if (format === "zip") {
+      let dest = path.join(path.dirname(info.dest), path.basename(info.dest, path.extname(info.dest)))
       active.push({id, dest, action: null})
-      const arrayBuffer = await axios.get(zipUrl, {responseType: "arraybuffer", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data)
-      fs.writeFileSync(dest, Buffer.from(arrayBuffer, "binary"))
+      await pixiv.util.downloadUgoiraZip(info.illust, dest)
     }
   } else if (illust.type === "novel") {
     // Download Novel
@@ -207,7 +184,7 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
       const arrayBuffer = await axios.get(image, {responseType: "arraybuffer", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data)
       const fileType = functions.bufferFileType(arrayBuffer)
       const pageDest = `${dest}/${name}.${fileType[0].extension?.replace("jpeg", "jpg")}`
-      fs.writeFileSync(pageDest, Buffer.from(arrayBuffer, "binary"))
+      fs.writeFileSync(pageDest, new Uint8Array(arrayBuffer))
     }
   } else {
     // Download Illust
@@ -217,7 +194,7 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
     const arrayBuffer = await axios.get(url, {responseType: "arraybuffer", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data)
     const fileType = functions.bufferFileType(arrayBuffer)
     dest = path.join(path.dirname(dest), `${path.basename(dest, path.extname(dest))}.${fileType[0].extension?.replace("jpeg", "jpg")}`)
-    fs.writeFileSync(dest, Buffer.from(arrayBuffer, "binary"))
+    fs.writeFileSync(dest, new Uint8Array(arrayBuffer))
   }
   window?.webContents.send("download-ended", {id, output: dest})
 }
@@ -355,7 +332,7 @@ if (!singleLock) {
         website?.webContents.send("navigate-home")
         await functions.timeout(50)
         const code = new URL(details.redirectURL).searchParams.get("code")
-        const refreshToken = await axios.post("https://oauth.secure.pixiv.net/auth/token", querystring.stringify({
+        const result = await axios.post("https://oauth.secure.pixiv.net/auth/token", querystring.stringify({
             "client_id": "MOBrBDS8blbauoSck0ZfDbtuzpyT",
             "client_secret": "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj",
             "code": code,
@@ -363,7 +340,8 @@ if (!singleLock) {
             "grant_type": "authorization_code",
             "include_policy": "true",
             "redirect_uri": "https://app-api.pixiv.net/web/v1/users/auth/pixiv/callback"
-          }), {headers: {"user-agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}}).then((r) => r.data.refresh_token)
+          }), {headers: {"user-agent": "PixivAndroidApp/5.0.234 (Android 11; Pixel 5)"}})
+        const refreshToken = result.data.refresh_token
         store.set("refreshToken", refreshToken)
       }
     })
