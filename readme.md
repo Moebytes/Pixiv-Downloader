@@ -44,6 +44,12 @@ For better accuracy provide the tags in Japanese, but they will be automatically
 
 `gabriel:gabriel, satania:satania, raphi:raphi, vigne:vigne`
 
+### Design
+
+Our design is available here: https://www.figma.com/design/utGtwyDdkigOGlfYjFYQiD/Pixiv-Downloader
+
+*New design is wip
+
 ### Installation
 
 Download the installer from the [releases](https://github.com/Moebytes/Pixiv-Downloader/releases) tab.
