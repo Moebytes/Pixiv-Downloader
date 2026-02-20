@@ -1,4 +1,3 @@
-import {ipcRenderer} from "electron"
 import React, {useContext, useEffect, useState} from "react"
 import clearAllButtonHover from "../assets/icons/clearAll-hover.png"
 import clearAllButton from "../assets/icons/clearAll.png"
@@ -8,11 +7,11 @@ import clearAllButtonDarkHover from "../assets/icons/clearAll-dark-hover.png"
 import clearAllButtonDark from "../assets/icons/clearAll-dark.png"
 import deleteAllButtonDark from "../assets/icons/deleteAll-dark.png"
 import deleteAllButtonDarkHover from "../assets/icons/deleteAll-dark-hover.png"
-import {ClearAllContext} from "../renderer"
+import {useActionSelector} from "../store"
 import "./styles/groupaction.less"
 
 const GroupAction: React.FunctionComponent = (props) => {
-    const {clearAll} = useContext(ClearAllContext)
+    const {clearAll} = useActionSelector()
     const [clearHover, setClearHover] = useState(false)
     const [deleteHover, setDeleteHover] = useState(false)
     const [color, setColor] = useState("light")
@@ -21,19 +20,19 @@ const GroupAction: React.FunctionComponent = (props) => {
         const updateColor = (event: any, color: string) => {
             setColor(color)
         }
-        ipcRenderer.on("update-color", updateColor)
+        window.ipcRenderer.on("update-color", updateColor)
         return () => {
-            ipcRenderer.removeListener("update-color", updateColor)
+            window.ipcRenderer.removeListener("update-color", updateColor)
         }
     }, [])
 
     const clear = () => {
-        ipcRenderer.invoke("clear-all")
+        window.ipcRenderer.invoke("clear-all")
         setClearHover(false)
     }
 
     const del = () => {
-        ipcRenderer.invoke("delete-all")
+        window.ipcRenderer.invoke("delete-all")
     }
 
     const getImage = (type: string) => {

@@ -1,0 +1,65 @@
+@font-face {
+    font-family: "GenEi M Gothic v2";
+    src: url("assets/fonts/GenEiMGothic2-Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Honoka Shin Antique-Kaku";
+    src: url("assets/fonts/Honoka-Shin-Antique-Kaku_M.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Tsunagi Gothic Black";
+    src: url("assets/fonts/TsunagiGothic.ttf") format("truetype");
+}
+
+@title-bar-height: 30px;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+}
+
+.app {
+    width: 100%;
+    height: 100%;
+}
+
+#webview {
+    width: 100%;
+    height: 100%;
+    padding-top: @title-bar-height;
+}
+
+::selection {
+    background-color: #6f4af3;
+    color: white;
+}
+
+::-webkit-scrollbar {
+    width: 20px;
+}
+  
+::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #5a5a5a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #303030;
+}

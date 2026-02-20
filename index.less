@@ -1,30 +1,77 @@
-@import "assets/fonts/fira-sans.less";
-@import "assets/fonts/maven-pro.less";
-@import "assets/fonts/skranji.less";
-@import "assets/fonts/yusei-magic.less";
+@font-face {
+    font-family: "GenEi M Gothic v2";
+    src: url("assets/fonts/GenEiMGothic2-Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Honoka Shin Antique-Kaku";
+    src: url("assets/fonts/Honoka-Shin-Antique-Kaku_M.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Tsunagi Gothic Black";
+    src: url("assets/fonts/TsunagiGothic.ttf") format("truetype");
+}
+
+@title-bar-height: 30px;
 
 :root {
-    --selection-color: #6f4af3;
-    --bg-color: #656ac2;
-    --title-color: #6153d3;
-    --text-color: black;
-    --search-color: #2f52f4;
-    --search-text: black;
-    --dir-color: #4c59a4;
-    --dir-text: black;
-    --settings-color: #673efa;
-    --settings-text: black;
-    --settings-revert: #563bf0;
-    --settings-revert-text: black;
-    --settings-ok: #355aff;
-    --settings-ok-text: black;
-    --version-color: #3a5eff;
-    --version-text: black;
-    --version-accept: #5142ff;
-    --version-accept-text: black;
-    --version-reject: #463bbe;
-    --version-reject-text: black;
-    --cookie-text: black;
+    --selectionColor: #6f4af3;
+	--iconColor: #4b7bff;
+	--maximizeButton: #2eafff;
+	--minimizeButton: #3992ff;
+	--closeButton: #4973ff;
+	--navColor: #6e92ff;
+	--background: #92c3ff;
+	--textColor: #000000;
+	--textColor2: #000000;
+	--textboxColor: #76a2ff;
+	--searchBG: #7594ff;
+	--searchButton: #4c94ff;
+	--checkboxColor: #4c6aff;
+	--clearAllButton: #799dff;
+	--deleteAllButton: #7088ff;
+	--iconColor2: #91d5ff;
+	--finishedColor: #588aff;
+	--itemBG: #6c9aff;
+	--itemStroke: #7eabff;
+	--locationButton: #4882ff;
+	--trashButton: #487cff;
+	--macMaximizeButton: #00ca48;
+	--macCloseButton: #ff4b59;
+	--macMinimizeButton: #ffc600;
+	--browserIcon: #000000;
+	--browserBG: #ffffff;
+	--titleColor: #acfacf;
+}
+
+.dark {
+	--iconColor: #4b7bff;
+	--maximizeButton: #2eafff;
+	--minimizeButton: #3992ff;
+	--closeButton: #4973ff;
+	--navColor: #324680;
+	--background: #2a3563;
+	--textColor: #ffffff;
+	--textColor2: #000000;
+	--textboxColor: #3e55aa;
+	--searchBG: #5675de;
+	--searchButton: #415fcd;
+	--checkboxColor: #4c6aff;
+	--clearAllButton: #5777d2;
+	--deleteAllButton: #5b70d8;
+	--iconColor2: #91d5ff;
+	--finishedColor: #5c8aff;
+	--itemBG: #2c3c83;
+	--itemStroke: #304588;
+	--locationButton: #3f78eb;
+	--trashButton: #4768ed;
+	--macMaximizeButton: #00ca48;
+	--macCloseButton: #ff4b59;
+	--macMinimizeButton: #ffc600;
+	--browserIcon: #000000;
+	--browserBG: #ffffff;
+	--titleColor: #6b97ff;
 }
 
 * {
@@ -36,7 +83,7 @@
 }
 
 html, body {
-    background-color: var(--bg-color);
+    background-color: var(--background);
     overflow-x: hidden;  
     overflow-y: hidden;
     height: 100%;
@@ -71,7 +118,7 @@ p {
 }
 
 ::selection {
-    background-color: var(--selection-color);
+    background-color: var(--selectionColor);
     color: white;
 }
 

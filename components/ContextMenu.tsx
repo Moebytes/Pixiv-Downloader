@@ -1,11 +1,9 @@
-import {ipcRenderer, clipboard} from "electron"
-import React, {useEffect, useState, useRef, useContext} from "react"
-import {PreviewContext} from "../renderer"
-import functions from "../structures/functions"
+import React, {useEffect, useState, useRef} from "react"
+import {useActionSelector} from "../store"
 import "./styles/contextmenu.less"
 
 const ContextMenu: React.FunctionComponent = (props) => {
-    const {previewVisible} = useContext(PreviewContext)
+    const {previewVisible} = useActionSelector()
     const [visible, setVisible] = useState(false)
     const [hover, setHover] = useState(false)
     const contextMenu = useRef(null) as React.RefObject<HTMLDivElement>
@@ -28,14 +26,14 @@ const ContextMenu: React.FunctionComponent = (props) => {
     const copy = () => {
         const selectedText = window.getSelection()?.toString().trim()
         if (selectedText) {
-            clipboard.writeText(selectedText)
+            window.clipboard.writeText(selectedText)
         } else {
-            clipboard.clear()
+            window.clipboard.clear()
         }
     }
 
     const paste = () => {
-        ipcRenderer.invoke("trigger-paste")
+        window.ipcRenderer.invoke("trigger-paste")
     }
 
     if (visible) {

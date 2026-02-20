@@ -1,19 +1,18 @@
-import {ipcRenderer} from "electron"
 import React, {useState, useEffect, useContext} from "react"
-import {FetchTextContext} from "../renderer"
+import {useSearchSelector} from "../store"
 import "./styles/errormessage.less"
 
 const ErrorMessage: React.FunctionComponent = (props) => {
     const [error, setError] = useState(null as "search" | "login" | null)
-    const {fetchText, setFetchText} = useContext(FetchTextContext)
+    const {fetchText} = useSearchSelector()
     
     useEffect(() => {
         const downloadError = (event: any, err: any) => {
             setError(err)
         }
-        ipcRenderer.on("download-error", downloadError)
+        window.ipcRenderer.on("download-error", downloadError)
         return () => {
-            ipcRenderer.removeListener("download-error", downloadError)
+            window.ipcRenderer.removeListener("download-error", downloadError)
         }
     }, [])
 

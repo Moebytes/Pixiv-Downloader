@@ -2,7 +2,7 @@
 
 <img src="assets/images/readme.png">
 
-This application lets you download images/ugoiras from Pixiv in bulk.
+This app lets you download images & ugoira from Pixiv.
 
 ### Features
 - Download illustrations, manga (png/jpg), novels (txt), and ugoiras (gif/zip)
@@ -52,7 +52,7 @@ Our design is available here: https://www.figma.com/design/utGtwyDdkigOGlfYjFYQi
 
 ### Installation
 
-Download the installer from the [releases](https://github.com/Moebytes/Pixiv-Downloader/releases) tab.
+Download from [releases](https://github.com/Moebytes/Pixiv-Downloader/releases).
 
 ### MacOS
 
@@ -60,13 +60,4 @@ On MacOS unsigned applications won't open, run this to remove the quarantine fla
 ```
 xattr -d com.apple.quarantine "/Applications/Pixiv Downloader.app"
 ```
-
-### Bugs and Feature Requests
-
-Open an issue on my GitHub repository.
-
-### Also See
-
-- [Waifu2x-GUI](https://github.com/Moebytes/Waifu2x-GUI)
-- [Photo Viewer](https://github.com/Moebytes/Photo-Viewer)
 

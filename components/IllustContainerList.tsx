@@ -1,13 +1,12 @@
-import {ipcRenderer} from "electron"
 import React, {useState, useEffect, useContext} from "react"
 import IllustContainer from "./IllustContainer"
 import Reorder from "react-reorder"
-import {ClearAllContext} from "../renderer"
-import {PixivIllust} from "pixiv.ts"
+import {useActionActions} from "../store"
+import type {PixivIllust} from "pixiv.ts"
 import "./styles/illustcontainerlist.less"
 
 const IllustContainerList: React.FunctionComponent = (props) => {
-    const {setClearAll} = useContext(ClearAllContext)
+    const {setClearAll} = useActionActions()
     const [containers, setContainers] = useState([] as  Array<{id: number, jsx: any}>)
     useEffect(() => {
         const downloadStarted = async (event: any, info: {id: number, illust: PixivIllust}) => {
@@ -18,9 +17,9 @@ const IllustContainerList: React.FunctionComponent = (props) => {
                 return newState
             })
         }
-        ipcRenderer.on("download-started", downloadStarted)
+        window.ipcRenderer.on("download-started", downloadStarted)
         return () => {
-            ipcRenderer.removeListener("download-started", downloadStarted)
+            window.ipcRenderer.removeListener("download-started", downloadStarted)
         }
     }, [])
 

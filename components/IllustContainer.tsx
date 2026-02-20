@@ -1,4 +1,3 @@
-import {ipcRenderer} from "electron"
 import functions from "../structures/functions"
 import React, {useState, useEffect, useRef, useReducer, useContext} from "react"
 import {ProgressBar} from "react-bootstrap"
@@ -12,8 +11,8 @@ import pSBC from "shade-blend-color"
 import bookmarks from "../assets/icons/bookmarks.png"
 import likes from "../assets/icons/likes.png"
 import views from "../assets/icons/views.png"
-import Pixiv, {PixivIllust} from "pixiv.ts"
-import {PreviewContext, TranslateTitlesContext} from "../renderer"
+import type {PixivIllust} from "pixiv.ts"
+import {useActionSelector, useSearchSelector} from "../store"
 import path from "path"
 import "./styles/illustcontainer.less"
 
@@ -24,8 +23,8 @@ export interface IllustContainerProps {
 }
 
 const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: IllustContainerProps) => {
-    const {previewVisible} = useContext(PreviewContext)
-    const {translateTitles} = useContext(TranslateTitlesContext)
+    const {previewVisible} = useActionSelector()
+    const {translateTitles} = useSearchSelector()
     const [deleted, setDeleted] = useState(false)
     const [output, setOutput] = useState("")
     const [hover, setHover] = useState(false)
@@ -54,15 +53,15 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
         const deleteAll = () => {
             setDeleteSignal(true)
         }
-        ipcRenderer.on("download-ended", downloadEnded)
-        ipcRenderer.on("clear-all", clearAll)
-        ipcRenderer.on("delete-all", deleteAll)
-        ipcRenderer.on("update-color", forceUpdate)
+        window.ipcRenderer.on("download-ended", downloadEnded)
+        window.ipcRenderer.on("clear-all", clearAll)
+        window.ipcRenderer.on("delete-all", deleteAll)
+        window.ipcRenderer.on("update-color", forceUpdate)
         return () => {
-            ipcRenderer.removeListener("download-ended", downloadEnded)
-            ipcRenderer.removeListener("clear-all", clearAll)
-            ipcRenderer.removeListener("delete-all", deleteAll)
-            ipcRenderer.removeListener("update-color", forceUpdate)
+            window.ipcRenderer.removeListener("download-ended", downloadEnded)
+            window.ipcRenderer.removeListener("clear-all", clearAll)
+            window.ipcRenderer.removeListener("delete-all", deleteAll)
+            window.ipcRenderer.removeListener("update-color", forceUpdate)
         }
     }, [])
 
@@ -79,7 +78,7 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
 
     const updateTitle = async () => {
         if (translateTitles) {
-            const title = await ipcRenderer.invoke("translate-title", props.illust.title)
+            const title = await window.ipcRenderer.invoke("translate-title", props.illust.title)
             setTitle(title)
         } else {
             setTitle(props.illust.title)
@@ -89,17 +88,17 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
     const deleteDownload = async () => {
         if (deleted) return
         setDeleteSignal(false)
-        const success = await ipcRenderer.invoke("delete-download", props.id)
+        const success = await window.ipcRenderer.invoke("delete-download", props.id)
         if (success) setDeleted(true)
     }
 
     const closeDownload = async () => {
-        if (!output) ipcRenderer.invoke("delete-download", props.id)
+        if (!output) window.ipcRenderer.invoke("delete-download", props.id)
         props.remove(props.id)
     }
 
     const openLocation = async () => {
-        ipcRenderer.invoke("open-location", output)
+        window.ipcRenderer.invoke("open-location", output)
     }
 
     const updateBackgroundColor = async () => {
@@ -110,7 +109,7 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
             const color = colors[Math.floor(Math.random() * colors.length)]
             setBackgroundColor(color)
         }
-        const theme = await ipcRenderer.invoke("get-theme")
+        const theme = await window.ipcRenderer.invoke("get-theme")
         if (theme === "light") {
             const text = illustContainerRef.current?.querySelectorAll(".illust-text, .illust-text-alt") as NodeListOf<HTMLElement>
             text.forEach((t) => {
@@ -179,7 +178,7 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
 
     const preview = (event: React.MouseEvent<HTMLElement>) => {
         const source = getImage()
-        if (!drag) ipcRenderer.invoke("preview", source)
+        if (!drag) window.ipcRenderer.invoke("preview", source)
     }
 
     const delayPress = (event: React.MouseEvent<HTMLElement>) => {
@@ -194,11 +193,11 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
     const openPage = () => {
         let url = `https://www.pixiv.net/en/artworks/${props.illust.id}`
         if (props.illust.type === "novel") url = `https://www.pixiv.net/novel/show.php?id=${props.illust.id}`
-        ipcRenderer.invoke("open-url", url)
+        window.ipcRenderer.invoke("open-url", url)
     }
 
     const openUser = () => {
-        ipcRenderer.invoke("open-url", `https://www.pixiv.net/en/users/${props.illust.user.id}`)
+        window.ipcRenderer.invoke("open-url", `https://www.pixiv.net/en/users/${props.illust.user.id}`)
     }
 
     return (

@@ -1,11 +1,10 @@
-import React, {useEffect, useState, useContext} from "react"
-import {AdvSettingsContext} from "../renderer"
+import React from "react"
+import {useActionSelector} from "../store"
 import logo from "../assets/images/logo.png"
-import functions from "../structures/functions"
 import "./styles/logobar.less"
 
 const LogoBar: React.FunctionComponent = (props) => {
-    const {advSettings, setADVSettings} = useContext(AdvSettingsContext)
+    const {advSettings} = useActionSelector()
     
     return (
         <section className="logo-bar">

@@ -1,32 +1,58 @@
 import {app, BrowserWindow, dialog, globalShortcut, ipcMain, shell, session} from "electron"
-import {autoUpdater} from "electron-updater"
 import Store from "electron-store"
+import dragAddon from "electron-click-drag-plugin"
 import path from "path"
 import process from "process"
-import "./dev-app-update.yml"
-import pack from "./package.json"
-import Pixiv, {PixivIllust} from "pixiv.ts"
-import unzip from "unzipper"
+import Pixiv, {PixivIllust, PixivNovel} from "pixiv.ts"
 import functions from "./structures/functions"
+import mainFunctions from "./structures/mainFunctions"
 import querystring from "querystring"
 import imageSize from "image-size"
 import axios from "axios"
 import fs from "fs"
 import {URL} from "url"
-require("@electron/remote/main").initialize()
 
 let webpPath = path.join(app.getAppPath(), "./node_modules/pixiv.ts/webp")
 if (!fs.existsSync(webpPath)) webpPath = path.join(__dirname, "../webp")
 process.setMaxListeners(0)
+
 let window: Electron.BrowserWindow | null
 let website: Electron.BrowserWindow | null
-autoUpdater.autoDownload = false
 const store = new Store()
 
 let pixiv = null as unknown as Pixiv
+let code_verifier = ""
 
 const active: Array<{id: number, dest: string, frameFolder?: string, action: null | "kill"}> = []
-let code_verifier = ""
+
+ipcMain.handle("close", (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.close()
+})
+
+ipcMain.handle("minimize", (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.minimize()
+})
+
+ipcMain.handle("maximize", (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return
+
+    if (win.isMaximized()) {
+      win.unmaximize()
+    } else {
+      win.maximize()
+    }
+})
+
+ipcMain.on("moveWindow", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  const handle = win?.getNativeWindowHandle()
+  if (!handle) return
+  const windowID = process.platform === "linux" ? handle.readUInt32LE(0) : handle
+  dragAddon.startDrag(windowID)
+})
 
 ipcMain.handle("delete-cookies", () => {
   session.defaultSession.clearStorageData()
@@ -56,9 +82,10 @@ ipcMain.handle("download-url", (event, url) => {
 
 const openWebsite = async () => {
   if (!website) {
-    website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, roundedCorners: false, backgroundColor: "#ffffff", center: false, webPreferences: {nodeIntegration: true, webviewTag: true, contextIsolation: false}})
-    await website.loadFile(path.join(__dirname, "website.html"))
-    require("@electron/remote/main").enable(website.webContents)
+    website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, 
+      backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
+      preload: path.join(__dirname, "../preload/index.js")}})
+    await website.loadFile(path.join(__dirname, "../renderer/browser.html"))
     website?.on("closed", () => {
       website = null
     })
@@ -125,9 +152,9 @@ ipcMain.handle("delete-download", async (event, id: number) => {
     let error = true
     while ((frameFolder ? fs.existsSync(dest) && fs.existsSync(frameFolder) : fs.existsSync(dest)) && error) {
       try {
-        if (frameFolder) functions.removeDirectory(frameFolder)
+        if (frameFolder) mainFunctions.removeDirectory(frameFolder)
         if (fs.statSync(dest).isDirectory()) {
-          functions.removeDirectory(dest)
+          mainFunctions.removeDirectory(dest)
         } else {
           fs.unlinkSync(dest)
         }
@@ -178,7 +205,7 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
     if (!fs.existsSync(dest)) fs.mkdirSync(dest, {recursive: true})
     active.push({id, dest, action: null})
     for (let i = 0; i < illust.meta_pages.length; i++) {
-      const name = await functions.parseTemplate(illust, template.replace(/^.*\//, ""), i, translateTitles, refreshToken)
+      const name = await mainFunctions.parseTemplate(illust, template.replace(/^.*\//, ""), i, translateTitles, refreshToken)
       let image = illust.meta_pages[i].image_urls.original ? illust.meta_pages[i].image_urls.original : illust.meta_pages[i].image_urls.large
       if (!image) image = illust.meta_pages[i].image_urls.medium
       const arrayBuffer = await axios.get(image, {responseType: "arraybuffer", headers: {Referer: "https://www.pixiv.net/"}}).then((r) => r.data)
@@ -199,7 +226,7 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
   window?.webContents.send("download-ended", {id, output: dest})
 }
 
-ipcMain.handle("download", async (event, items: any) => {
+const downloadItems = async (items: any) => {
   let promises = [] as any
   items.map((item: any) => {
     const promise = new Promise<void>(async (resolve) => {
@@ -209,6 +236,196 @@ ipcMain.handle("download", async (event, items: any) => {
     promises.push(promise)
   })
   await Promise.all(promises)
+}
+
+interface SearchInfo {
+  directory: string
+  id: number
+  kind: any
+  format: string
+  template: string
+  translate: boolean, 
+  sort: any
+  restrict: any
+  translateTitles: boolean
+  flattenDirectory: boolean
+  folderMap: string
+  speed: number
+  reverse: boolean
+  bookmarks: any
+  bookmarkFilter: number
+  target: any
+  moe: boolean
+  r18: boolean
+  ai: boolean
+  illustLimit: string
+  mangaLimit: string
+  ugoiraLimit: string
+}
+
+const updateFormat = (illust: PixivIllust | PixivNovel, format: string) => {
+    if (illust.type === "ugoira") {
+        if (format !== "gif" && format !== "webp" && format !== "zip") {
+            return "gif"
+        }
+    } else if (illust.type === "novel") {
+        if (format !== "txt") {
+            return "txt"
+        }
+    } else {
+        if (format !== "png" && format !== "jpg") {
+            return "png"
+        }
+    }
+}
+
+const parseDest = async (illust: PixivIllust, info: SearchInfo, newFormat?: string) => {
+    const {directory, template, translateTitles, flattenDirectory, format, folderMap, translate} = info
+    let dir = directory.replace(/\\+/g, "/")
+    if (dir.endsWith("/")) dir = dir.slice(0, -1)
+    const name = await mainFunctions.parseTemplate(illust, template, template.includes("*") ? undefined : 0, translateTitles)
+    const tagFolder = await mainFunctions.parseFolderMap(illust, folderMap, translate)
+    if (illust.meta_pages?.length) {
+        return flattenDirectory ? dir : `${dir}/${tagFolder}${name}`
+    } else {
+        return `${dir}/${tagFolder}${name}.${newFormat ? newFormat : format}`
+    }
+}
+
+const search = async (query: string, info: SearchInfo) => {
+  const {id, kind, format, template, translate, sort, restrict, translateTitles,
+    speed, reverse, bookmarks, bookmarkFilter, target, moe, r18, ai, illustLimit, 
+    mangaLimit, ugoiraLimit
+  } = info
+  const refreshToken = store.get("refreshToken", "") as string
+  if (!refreshToken) return window?.webContents.send("download-error", "login")
+  const pixiv = await Pixiv.refreshLogin(refreshToken)
+  let illustID = /\d{5,}/.test(query) ? Number(query.match(/\d{5,}/)?.[0]) : null
+  if (!illustID) illustID = /\d{3,}/.test(query) ? Number(query.match(/\d{3,}/)?.[0]) : null
+  if (illustID) {
+      if (/users/.test(query)) {
+          let illusts: PixivIllust[]
+          if (kind === "novel" || /novels/.test(query)) {
+              illusts = await pixiv.user.novels({user_id: illustID, sort, restrict, bookmarks}) as any
+              if (pixiv.user.nextURL) {
+                  if (bookmarkFilter) {
+                      illusts = [...illusts, ...await pixiv.util.bookmarkMultiCall({next_url: pixiv.user.nextURL, novels: illusts as any}, bookmarkFilter)]
+                  } else {
+                      illusts = [...illusts, ...await pixiv.util.multiCall({next_url: pixiv.user.nextURL, novels: illusts as any})]
+                  }
+              }
+          } else {
+              illusts = /bookmarks/.test(query) ? await pixiv.user.bookmarksIllust({user_id: illustID, sort, restrict, bookmarks}) : await pixiv.user.illusts({user_id: illustID, sort, restrict, bookmarks})
+              if (pixiv.user.nextURL) {
+                  if (bookmarkFilter) {
+                      illusts = [...illusts, ...await pixiv.util.bookmarkMultiCall({next_url: pixiv.user.nextURL, illusts}, bookmarkFilter)]
+                  } else {
+                      illusts = [...illusts, ...await pixiv.util.multiCall({next_url: pixiv.user.nextURL, illusts})]
+                  }
+              }
+              illusts = illusts.filter((i) => i.type === kind)
+              illusts = illusts.filter((i) => r18 ? i.x_restrict === 1 : i.x_restrict === 0)
+              illusts = illusts.filter((i) => ai ? i.illust_ai_type === 2 : i.illust_ai_type !== 2)
+          }
+          let current = id
+          let downloaded = false
+          let items = [] as any
+          window?.webContents.send("update-fetch-text", `Fetching ${illusts.length}...`)
+          for (let i = 0; i < illusts.length; i++) {
+              const illust = illusts[i]
+              let image = illust.meta_single_page.original_image_url ? illust.meta_single_page.original_image_url : illust.image_urls.large 
+              if (!image) image = illust.image_urls.medium
+              const dest = await parseDest(illusts[i], info)
+              items.push({id: current, illust: illusts[i], dest, format, speed, reverse, template, translateTitles})
+              current += 1
+              window?.webContents.send("update-id", current)
+          }
+          try {
+              await downloadItems(items)
+              downloaded = true
+          } catch {}
+          window?.webContents.send("update-fetch-text", "")
+          if (!downloaded) return window?.webContents.send("download-error", "search")
+      } else {
+          try {
+              const illust = /novel/.test(query) ? await pixiv.novel.get(illustID) as any : await pixiv.illust.get(illustID)
+              const newFormat = updateFormat(illust, format)
+              window?.webContents.send("update-format", newFormat)
+              window?.webContents.send("update-kind", illust.type)
+              let current = id
+              let image = illust.meta_single_page.original_image_url ? illust.meta_single_page.original_image_url : illust.image_urls.large 
+              if (!image) image = illust.image_urls.medium
+              const dest = await parseDest(illust, info, newFormat)
+              await downloadItems([{id: current, illust, dest, format, speed, reverse, template, translateTitles}])
+              window?.webContents.send("update-id", current + 1)
+          } catch (e) {
+              console.log(e)
+              return window?.webContents.send("download-error", "search")
+          }
+      }
+  } else {
+      let illusts: PixivIllust[]
+      if (query === "day") {
+          illusts = kind === "novel" ? await pixiv.search.novels({mode: r18 ? "day_r18" : "day", sort, bookmarks}) as any : await pixiv.search.illusts({mode: r18 ? "day_r18" : "day", sort, bookmarks})
+      } else if (query === "week") {
+          illusts = kind === "novel" ? await pixiv.search.novels({mode: r18 ? "week_r18" : "week", sort, bookmarks}) as any : await pixiv.search.illusts({mode: r18 ? "week_r18" : "week", sort, bookmarks})
+      } else if (query === "month") {
+          illusts = kind === "novel" ? await pixiv.search.novels({word: r18 ? "R-18" : "", mode: "month", sort, bookmarks}) as any : await pixiv.search.illusts({word: r18 ? "R-18" : "", mode: "month", sort, bookmarks})
+      } else {
+          if (kind === "ugoira") query += " うごイラ"
+          if (r18) query += " R-18"
+          if (kind === "novel") {
+              illusts = await pixiv.search.novels({word: query, en: translate, r18, type: kind, sort, search_target: target, restrict, bookmarks}) as any
+          } else {
+              illusts = await pixiv.search.illusts({word: query, en: translate, r18, type: kind, sort, search_target: target, restrict, bookmarks, moe})
+          }
+      }
+      let current = id
+      let downloaded = false
+      let limit = (kind === "illust" || kind === "novel") ? illustLimit : (kind === "manga" ? mangaLimit : ugoiraLimit)
+      if (kind === "novel") {
+          if (pixiv.search.nextURL && illusts.length < Number(limit)) {
+              if (bookmarkFilter) {
+                  illusts = [...illusts, ...await pixiv.util.bookmarkMultiCall({next_url: pixiv.search.nextURL, novels: illusts as any}, bookmarkFilter, Number(limit))]
+              } else {
+                  illusts = [...illusts, ...await pixiv.util.multiCall({next_url: pixiv.search.nextURL, novels: illusts as any}, Number(limit))]
+              }
+          }
+          illusts = illusts.slice(0, Number(limit))
+      } else {
+          if (pixiv.search.nextURL && illusts.length < Number(limit)) {
+              if (bookmarkFilter) {
+                  illusts = [...illusts, ...await pixiv.util.bookmarkMultiCall({next_url: pixiv.search.nextURL, illusts}, bookmarkFilter, Number(limit))]
+              } else {
+                  illusts = [...illusts, ...await pixiv.util.multiCall({next_url: pixiv.search.nextURL, illusts}, Number(limit))]
+              }
+          }
+          illusts = illusts.filter((i) => r18 ? i.x_restrict === 1 : i.x_restrict === 0)
+          illusts = illusts.filter((i) => ai ? i.illust_ai_type === 2 : i.illust_ai_type !== 2)
+          .slice(0, Number(limit))
+      }
+      let items = [] as any
+      window?.webContents.send("update-fetch-text", `Fetching ${illusts.length}...`)
+      for (let i = 0; i < illusts.length; i++) {
+          let illust = illusts[i]
+          let image = illust.meta_single_page.original_image_url ? illust.meta_single_page.original_image_url : illust.image_urls.large 
+          if (!image) image = illust.image_urls.medium
+          const dest = await parseDest(illusts[i], info)
+          items.push({id: current, illust: illusts[i], dest, format, speed, reverse, template, translateTitles})
+          current += 1
+          window?.webContents.send("update-id", current)
+      }
+      try {
+          await downloadItems(items)
+          downloaded = true
+      } catch {}
+      window?.webContents.send("update-fetch-text", "")
+      if (!downloaded) return window?.webContents.send("download-error", "search")
+  }
+}
+
+ipcMain.handle("search", async (event, query: string, info: SearchInfo) => {
+  await search(query, info)
 })
 
 ipcMain.handle("init-settings", () => {
@@ -267,27 +484,12 @@ ipcMain.handle("save-theme", (event, theme: string) => {
   store.set("theme", theme)
 })
 
-ipcMain.handle("install-update", async (event) => {
-  if (process.platform === "darwin") {
-    const update = await autoUpdater.checkForUpdates()
-    const url = `${pack.repository.url}/releases/download/v${update.updateInfo.version}/${update.updateInfo.files[0].url}`
-    await shell.openExternal(url)
-    app.quit()
-  } else {
-    await autoUpdater.downloadUpdate()
-    autoUpdater.quitAndInstall()
-  }
+ipcMain.handle("get-os", () => {
+  return store.get("os", "mac")
 })
 
-ipcMain.handle("check-for-updates", async (event, startup: boolean) => {
-  window?.webContents.send("close-all-dialogs", "version")
-  const update = await autoUpdater.checkForUpdates()
-  const newVersion = update.updateInfo.version
-  if (pack.version === newVersion) {
-    if (!startup) window?.webContents.send("show-version-dialog", null)
-  } else {
-    window?.webContents.send("show-version-dialog", newVersion)
-  }
+ipcMain.handle("save-os", (event, os: string) => {
+  store.set("os", os)
 })
 
 const singleLock = app.requestSingleInstanceLock()
@@ -303,25 +505,20 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, roundedCorners: false, backgroundColor: "#656ac2", center: true, webPreferences: {nodeIntegration: true, contextIsolation: false, webSecurity: false}})
-    window.loadFile(path.join(__dirname, "index.html"))
+    window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, 
+      backgroundColor: "#656ac2", center: true, webPreferences: {
+      preload: path.join(__dirname, "../preload/index.js")}})
+    window.loadFile(path.join(__dirname, "../renderer/index.html"))
     window.removeMenu()
     if (process.platform === "darwin") {
-      fs.chmodSync(`${webpPath}/img2webp.app`, "777")
+      //fs.chmodSync(`${webpPath}/img2webp.app`, "777")
     }
-    require("@electron/remote/main").enable(window.webContents)
     window.on("close", () => {
       website?.close()
     })
     window.on("closed", () => {
       window = null
     })
-    if (process.env.DEVELOPMENT === "true") {
-      globalShortcut.register("Control+Shift+I", () => {
-        window?.webContents.toggleDevTools()
-        website?.webContents.toggleDevTools()
-      })
-    }
     session.defaultSession.webRequest.onBeforeSendHeaders({urls: ["https://*.pixiv.net/*", "https://*.pximg.net/*"]}, (details, callback) => {
       details.requestHeaders["Referer"] = "https://www.pixiv.net/"
       callback({requestHeaders: details.requestHeaders})

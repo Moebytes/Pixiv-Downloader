@@ -1,19 +1,17 @@
-import {ipcRenderer} from "electron"
-import {shell} from "@electron/remote"
-import fs from "fs"
-import React, {useContext, useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import folderButtonHover from "../assets/icons/folder-hover.png"
 import folderButton from "../assets/icons/folder.png"
-import {DirectoryContext} from "../renderer"
+import {useSearchSelector, useSearchActions} from "../store"
 import "./styles/directorybar.less"
 
 const DirectoryBar: React.FunctionComponent = (props) => {
     const [defaultDir, setDefaultDir] = useState("")
     const [folderHover, setFolderHover] = useState(false)
-    const {directory, setDirectory} = useContext(DirectoryContext)
+    const {directory} = useSearchSelector()
+    const {setDirectory} = useSearchActions()
 
     useEffect(() => {
-        ipcRenderer.invoke("get-downloads-folder").then((f) => {
+        window.ipcRenderer.invoke("get-downloads-folder").then((f) => {
             f = f.replace(/\\/g, "/")
             setDefaultDir(f)
             setDirectory(f)
@@ -21,7 +19,7 @@ const DirectoryBar: React.FunctionComponent = (props) => {
     }, [])
 
     const changeDirectory = async () => {
-        let dir = await ipcRenderer.invoke("select-directory")
+        let dir = await window.ipcRenderer.invoke("select-directory")
         if (dir) {
             dir = dir.replace(/\\/g, "/")
             setDefaultDir(dir)
@@ -33,16 +31,15 @@ const DirectoryBar: React.FunctionComponent = (props) => {
         const dir = event.target.value.replace(/\\/g, "/")
         if (!dir.includes(defaultDir)) {
             setDirectory(defaultDir)
-            ipcRenderer.invoke("select-directory", defaultDir)
+            window.ipcRenderer.invoke("select-directory", defaultDir)
         } else {
             setDirectory(dir)
-            ipcRenderer.invoke("select-directory", dir)
+            window.ipcRenderer.invoke("select-directory", dir)
         }
     }
 
     const openDirectory = () => {
-        if (!fs.existsSync(directory)) fs.mkdirSync(directory, {recursive: true})
-        shell.openPath(directory)
+        window.shell.openPath(directory)
     }
 
     return (

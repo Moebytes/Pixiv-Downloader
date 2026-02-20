@@ -1,50 +1,41 @@
-import {ipcRenderer} from "electron"
-import React, {useContext, useEffect, useRef, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Dropdown, DropdownButton} from "react-bootstrap"
-import {TemplateContext, FolderMapContext, SortContext, TargetContext, IllustLimitContext, MangaLimitContext, 
-UgoiraLimitContext, TranslateTitlesContext, RestrictContext, MoeContext, BookmarksContext, BookmarkFilterContext,
-AIContext, AdvSettingsContext, FlattenDirectoryContext} from "../renderer"
-import functions from "../structures/functions"
+import {useSearchSelector, useSearchActions, useActionSelector, useActionActions} from "../store"
 import checkbox from "../assets/icons/checkbox.png"
 import checkboxChecked from "../assets/icons/checkbox-checked.png"
 import "./styles/advancedsettings.less"
 
 const AdvancedSettings: React.FunctionComponent = (props) => {
-    const {template, setTemplate} = useContext(TemplateContext)
-    const {folderMap, setFolderMap} = useContext(FolderMapContext)
-    const {illustLimit, setIllustLimit} = useContext(IllustLimitContext)
-    const {mangaLimit, setMangaLimit} = useContext(MangaLimitContext)
-    const {ugoiraLimit, setUgoiraLimit} = useContext(UgoiraLimitContext)
-    const {sort, setSort} = useContext(SortContext)
-    const {target, setTarget} = useContext(TargetContext)
-    const {translateTitles, setTranslateTitles} = useContext(TranslateTitlesContext)
-    const {restrict, setRestrict} = useContext(RestrictContext)
-    const {moe, setMoe} = useContext(MoeContext)
-    const {bookmarks, setBookmarks} = useContext(BookmarksContext)
-    const {bookmarkFilter, setBookmarkFilter} = useContext(BookmarkFilterContext)
-    const {ai, setAI} = useContext(AIContext)
-    const {flattenDirectory, setFlattenDirectory} = useContext(FlattenDirectoryContext)
-    const {advSettings, setADVSettings} = useContext(AdvSettingsContext)
+    const {template, folderMap, illustLimit, mangaLimit, ugoiraLimit,
+        sort, target, translateTitles, restrict, moe, bookmarks,
+        bookmarkFilter, ai, flattenDirectory
+    } = useSearchSelector()
+    const {setTemplate, setFolderMap, setIllustLimit, setMangaLimit, setUgoiraLimit,
+        setSort, setTarget, setTranslateTitles, setRestrict, setMoe, setBookmarks,
+        setBookmarkFilter, setAI, setFlattenDirectory
+    } = useSearchActions()
+    const {advSettings} = useActionSelector()
+    const {setAdvSettings} = useActionActions()
     const [cookieDeleted, setCookieDeleted] = useState(false)
 
     useEffect(() => {
         const showSettingsDialog = (event: any, update: any) => {
-            setADVSettings((prev: boolean) => !prev)
+            setAdvSettings(!advSettings)
         }
         const closeAllDialogs = (event: any, ignore: any) => {
-            if (ignore !== "settings") setADVSettings(false)
+            if (ignore !== "settings") setAdvSettings(false)
         }
-        ipcRenderer.on("show-settings-dialog", showSettingsDialog)
-        ipcRenderer.on("close-all-dialogs", closeAllDialogs)
+        window.ipcRenderer.on("show-settings-dialog", showSettingsDialog)
+        window.ipcRenderer.on("close-all-dialogs", closeAllDialogs)
         initSettings()
         return () => {
-            ipcRenderer.removeListener("show-settings-dialog", showSettingsDialog)
-            ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
+            window.ipcRenderer.removeListener("show-settings-dialog", showSettingsDialog)
+            window.ipcRenderer.removeListener("close-all-dialogs", closeAllDialogs)
         }
     }, [])
 
     const initSettings = async () => {
-        const settings = await ipcRenderer.invoke("init-settings")
+        const settings = await window.ipcRenderer.invoke("init-settings")
         if (settings) {
             if (settings.template) setTemplate(settings.template)
             if (settings.folderMap) setFolderMap(settings.folderMap)
@@ -64,14 +55,12 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
     }
 
     useEffect(() => {
-        ipcRenderer.invoke("store-settings", {template, folderMap, sort, target, restrict, illustLimit, mangaLimit, 
+        window.ipcRenderer.invoke("store-settings", {template, folderMap, sort, target, restrict, illustLimit, mangaLimit, 
         ugoiraLimit, translateTitles, moe, bookmarks, bookmarkFilter, ai, flattenDirectory})
-        functions.logoDrag(!advSettings)
     })
 
     const ok = () => {
-        functions.logoDrag(true)
-        setADVSettings(false)
+        setAdvSettings(false)
     }
 
     const revert = () => {
@@ -80,12 +69,12 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
         setSort("date_desc")
         setTarget("partial_match_for_tags")
         setRestrict("public")
-        setIllustLimit(1000)
-        setMangaLimit(100)
-        setUgoiraLimit(100)
+        setIllustLimit("100")
+        setMangaLimit("25")
+        setUgoiraLimit("10")
         setTranslateTitles(false)
         setMoe(false)
-        setBookmarks(0)
+        setBookmarks("0")
         setBookmarkFilter(0)
         setAI(false)
         setFlattenDirectory(false)
@@ -111,15 +100,17 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
 
     const changeIllustLimitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
-            setIllustLimit((prev: any) => {
-                if (Number(prev) + 1 > 99999) return Number(prev)
-                return Number(prev) + 1
-            })
+            const getNewLimit = () => {
+                if (Number(illustLimit) + 1 > 99999) return Number(illustLimit)
+                return Number(illustLimit) + 1
+            }
+            setIllustLimit(String(getNewLimit()))
         } else if (event.key === "ArrowDown") {
-            setIllustLimit((prev: any) => {
-                if (Number(prev) - 1 < 0) return Number(prev)
-                return Number(prev) - 1
-            })
+            const getNewLimit = () => {
+                if (Number(illustLimit) - 1 < 0) return Number(illustLimit)
+                return Number(illustLimit) - 1
+            }
+            setIllustLimit(String(getNewLimit()))
         }
     }
 
@@ -133,15 +124,17 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
 
     const changeMangaLimitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
-            setMangaLimit((prev: any) => {
-                if (Number(prev) + 1 > 99999) return Number(prev)
-                return Number(prev) + 1
-            })
+            const getNewLimit = () => {
+                if (Number(mangaLimit) + 1 > 99999) return Number(mangaLimit)
+                return Number(mangaLimit) + 1
+            }
+            setMangaLimit(String(getNewLimit()))
         } else if (event.key === "ArrowDown") {
-            setMangaLimit((prev: any) => {
-                if (Number(prev) - 1 < 0) return Number(prev)
-                return Number(prev) - 1
-            })
+            const getNewLimit = () => {
+                if (Number(mangaLimit) - 1 < 0) return Number(mangaLimit)
+                return Number(mangaLimit) - 1
+            }
+            setMangaLimit(String(getNewLimit()))
         }
     }
 
@@ -155,20 +148,22 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
 
     const changeUgoiraLimitKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
-            setUgoiraLimit((prev: any) => {
-                if (Number(prev) + 1 > 99999) return Number(prev)
-                return Number(prev) + 1
-            })
+            const getNewLimit = () => {
+                if (Number(ugoiraLimit) - 1 < 0) return Number(ugoiraLimit)
+                return Number(ugoiraLimit) - 1
+            }
+            setUgoiraLimit(String(getNewLimit()))
         } else if (event.key === "ArrowDown") {
-            setUgoiraLimit((prev: any) => {
-                if (Number(prev) - 1 < 0) return Number(prev)
-                return Number(prev) - 1
-            })
+            const getNewLimit = () => {
+                if (Number(ugoiraLimit) - 1 < 0) return Number(ugoiraLimit)
+                return Number(ugoiraLimit) - 1
+            }
+            setUgoiraLimit(String(getNewLimit()))
         }
     }
 
     const deleteCookie = () => {
-        ipcRenderer.invoke("delete-cookies")
+        window.ipcRenderer.invoke("delete-cookies")
         setCookieDeleted(true)
         setTimeout(() => {setCookieDeleted(false)}, 2000)
     }
@@ -227,28 +222,28 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
                                 </DropdownButton>
                                 <p className="settings-text">Exact Bookmarks: </p>
                                 <DropdownButton title={bookmarks} drop="down">
-                                    <Dropdown.Item active={bookmarks === 0} onClick={() => setBookmarks(0)}>0</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 50} onClick={() => setBookmarks(50)}>50</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 100} onClick={() => setBookmarks(100)}>100</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 300} onClick={() => setBookmarks(300)}>300</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 500} onClick={() => setBookmarks(500)}>500</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 1000} onClick={() => setBookmarks(1000)}>1000</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 3000} onClick={() => setBookmarks(3000)}>3000</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 5000} onClick={() => setBookmarks(5000)}>5000</Dropdown.Item>
-                                    <Dropdown.Item active={bookmarks === 10000} onClick={() => setBookmarks(10000)}>10000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "0"} onClick={() => setBookmarks("0")}>0</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "50"} onClick={() => setBookmarks("50")}>50</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "100"} onClick={() => setBookmarks("100")}>100</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "300"} onClick={() => setBookmarks("300")}>300</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "500"} onClick={() => setBookmarks("500")}>500</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "1000"} onClick={() => setBookmarks("1000")}>1000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "3000"} onClick={() => setBookmarks("3000")}>3000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "5000"} onClick={() => setBookmarks("5000")}>5000</Dropdown.Item>
+                                    <Dropdown.Item active={bookmarks === "10000"} onClick={() => setBookmarks("10000")}>10000</Dropdown.Item>
                                 </DropdownButton>
                             </div>
                             <div className="settings-row">
                                 <p className="settings-text">Translate Titles:</p>
-                                <img className="settings-checkbox-img" src={translateTitles ? checkboxChecked : checkbox} onClick={() => setTranslateTitles((prev: boolean) => !prev)}/>
+                                <img className="settings-checkbox-img" src={translateTitles ? checkboxChecked : checkbox} onClick={() => setTranslateTitles(!translateTitles)}/>
                                 <p className="settings-text" style={{marginLeft: "20px"}}>Flatten Directory:</p>
-                                <img className="settings-checkbox-img" src={flattenDirectory ? checkboxChecked : checkbox} onClick={() => setFlattenDirectory((prev: boolean) => !prev)}/>
+                                <img className="settings-checkbox-img" src={flattenDirectory ? checkboxChecked : checkbox} onClick={() => setFlattenDirectory(!flattenDirectory)}/>
                             </div>
                             <div className="settings-row">
                                 <p className="settings-text">Pixiv.moe:</p>
-                                <img className="settings-checkbox-img" src={moe ? checkboxChecked : checkbox} onClick={() => setMoe((prev: boolean) => !prev)}/>
+                                <img className="settings-checkbox-img" src={moe ? checkboxChecked : checkbox} onClick={() => setMoe(!moe)}/>
                                 <p className="settings-text" style={{marginLeft: "20px"}}>AI:</p>
-                                <img className="settings-checkbox-img" src={ai ? checkboxChecked : checkbox} onClick={() => setAI((prev: boolean) => !prev)}/>
+                                <img className="settings-checkbox-img" src={ai ? checkboxChecked : checkbox} onClick={() => setAI(!ai)}/>
                             </div>
                             <div className="settings-row">
                                 <p className="settings-text">Illust Limit: </p>

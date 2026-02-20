@@ -1,27 +1,22 @@
-import {ipcRenderer} from "electron"
-import React, {useContext, useEffect, useState} from "react"
+import React, {useEffect} from "react"
 import {Dropdown, DropdownButton} from "react-bootstrap"
-import {KindContext, FormatContext, TranslateContext, R18Context, ReverseContext, SpeedContext} from "../renderer"
+import {useSearchSelector, useSearchActions} from "../store"
 import "./styles/optionsbar.less"
 
-const OptionsBar: React.FunctionComponent = (props) => {
-    const {kind, setKind} = useContext(KindContext)
-    const {format, setFormat} = useContext(FormatContext)
-    const {translate, setTranslate} = useContext(TranslateContext)
-    const {r18, setR18} = useContext(R18Context)
-    const {speed, setSpeed} = useContext(SpeedContext)
-    const {reverse, setReverse} = useContext(ReverseContext)
+const OptionsBar: React.FunctionComponent = () => {
+    const {kind, format, translate, r18, speed, reverse} = useSearchSelector()
+    const {setKind, setFormat, setTranslate, setR18, setSpeed, setReverse} = useSearchActions()
 
     useEffect(() => {
         initSettings()
     }, [])
 
     useEffect(() => {
-        ipcRenderer.invoke("store-settings", {kind, format, translate, r18, speed, reverse})
+        window.ipcRenderer.invoke("store-settings", {kind, format, translate, r18, speed, reverse})
     })
     
     const initSettings = async () => {
-        const settings = await ipcRenderer.invoke("init-settings")
+        const settings = await window.ipcRenderer.invoke("init-settings")
         if (settings.kind) setKind(settings.kind)
         if (settings.format) setFormat(settings.format)
         if (settings.translate) setTranslate(settings.translate)
@@ -32,25 +27,25 @@ const OptionsBar: React.FunctionComponent = (props) => {
 
     const handleKind = (kind: string) => {
         if (kind === "ugoira") {
-            if (format !== "gif" || format !== "zip" || format !== "webp") setFormat("gif")
+            if (format !== "gif" && format !== "zip" && format !== "webp") setFormat("gif")
         } else if (kind === "novel") {
             setFormat("txt")
         } else {
-            if (format !== "png" || format !== "jpg") setFormat("png")
+            if (format !== "png" && format !== "jpg") setFormat("png")
         }
         setKind(kind)
     }
     
     const handleTranslate = () => {
-        setTranslate((prev: any) => !prev)
+        setTranslate(!translate)
     }
 
     const handleR18 = () => {
-        setR18((prev: any) => !prev)
+        setR18(!r18)
     }
 
     const handleReverse = () => {
-        setReverse((prev: any) => !prev)
+        setReverse(!reverse)
     }
 
     const handleSpeed = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,17 +57,19 @@ const OptionsBar: React.FunctionComponent = (props) => {
 
     const handleSpeedKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "ArrowUp") {
-            setSpeed((prev: any) => {
-                if (Number(prev) + 1 > 99) return Number(prev)
-                if (String(prev).includes(".")) return (Number(prev) + 1).toFixed(1)
-                return Number(prev) + 1
-            })
+            const getNewSpeed = () => {
+                if (Number(speed) + 1 > 99) return Number(speed)
+                if (String(speed).includes(".")) return (Number(speed) + 1).toFixed(1)
+                return Number(speed) + 1
+            }
+            setSpeed(String(getNewSpeed()))
         } else if (event.key === "ArrowDown") {
-            setSpeed((prev: any) => {
-                if (Number(prev) - 1 < 0) return Number(prev)
-                if (String(prev).includes(".")) return (Number(prev) - 1).toFixed(1)
-                return Number(prev) - 1
-            })
+            const getNewSpeed = () => {
+                if (Number(speed) - 1 < 0) return Number(speed)
+                if (String(speed).includes(".")) return (Number(speed) - 1).toFixed(1)
+                return Number(speed) - 1
+            }
+            setSpeed(String(getNewSpeed()))
         }
     }
 
