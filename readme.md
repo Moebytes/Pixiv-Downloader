@@ -1,4 +1,4 @@
-## Pixiv Downloader
+## Pixiv Fetcher
 
 <img src="assets/images/readme.png">
 
@@ -46,18 +46,18 @@ For better accuracy provide the tags in Japanese, but they will be automatically
 
 ### Design
 
-Our design is available here: https://www.figma.com/design/utGtwyDdkigOGlfYjFYQiD/Pixiv-Downloader
+Our design is available here: https://www.figma.com/design/utGtwyDdkigOGlfYjFYQiD/Pixiv-Fetcher
 
 *New design is wip
 
 ### Installation
 
-Download from [releases](https://github.com/Moebytes/Pixiv-Downloader/releases).
+Download from [releases](https://github.com/Moebytes/Pixiv-Fetcher/releases).
 
 ### MacOS
 
 On MacOS unsigned applications won't open, run this to remove the quarantine flag.
 ```
-xattr -d com.apple.quarantine "/Applications/Pixiv Downloader.app"
+xattr -d com.apple.quarantine "/Applications/Pixiv Fetcher.app"
 ```
 

@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 env:
-  APP_NAME: Pixiv-Downloader
-  ARTIFACT_PREFIX: pixiv-downloader
+  APP_NAME: Pixiv-Fetcher
+  ARTIFACT_PREFIX: pixiv-fetcher
 
 permissions:
   contents: write

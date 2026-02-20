@@ -1,5 +1,5 @@
 {
-  "name": "pixiv-downloader",
+  "name": "pixiv-fetcher",
   "version": "0.9.9",
   "description": "An app that downloads images & ugoira from Pixiv",
   "main": "dist/main/index.js",
@@ -17,11 +17,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Moebytes/Pixiv-Downloader"
+    "url": "https://github.com/Moebytes/Pixiv-Fetcher"
   },
   "build": {
     "appId": "com.moebytes.pixivdl",
-    "productName": "Pixiv Downloader",
+    "productName": "Pixiv Fetcher",
     "icon": "./assets/icon.png",
     "directories": {
       "buildResources": "assets",
@@ -52,7 +52,7 @@
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "uninstallDisplayName": "Pixiv Downloader",
+      "uninstallDisplayName": "Pixiv Fetcher",
       "createDesktopShortcut": "always",
       "installerSidebar": "./assets/installer.bmp",
       "uninstallerSidebar": "./assets/installer.bmp"
@@ -70,7 +70,7 @@
     ],
     "publish": {
       "provider": "github",
-      "repo": "Pixiv-Downloader",
+      "repo": "Pixiv-Fetcher",
       "owner": "Moebytes",
       "releaseType": "draft"
     },

@@ -70,7 +70,7 @@ const TitleBar: React.FunctionComponent = (props) => {
                 </div>
                 <div className="title-container">
                     <Icon className="app-icon"/>
-                    <span className="title">Pixiv Downloader</span>
+                    <span className="title">Pixiv Fetcher</span>
                 </div>
                 <div className="title-button-container">
                     <SettingsIcon className="title-bar-button" onClick={settings}/>
@@ -90,7 +90,7 @@ const TitleBar: React.FunctionComponent = (props) => {
             <div className="title-group-container">
                 <div className="title-container">
                     <Icon className="app-icon"/>
-                    <span className="title">Pixiv Downloader</span>
+                    <span className="title">Pixiv Fetcher</span>
                 </div>
                 <div className="title-button-container">
                     <SettingsIcon className="title-bar-button" onClick={settings}/>
