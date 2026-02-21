@@ -1,12 +1,4 @@
-import React, {useContext, useEffect, useState} from "react"
-import clearAllButtonHover from "../assets/icons/clearAll-hover.png"
-import clearAllButton from "../assets/icons/clearAll.png"
-import deleteAllButton from "../assets/icons/deleteAll.png"
-import deleteAllButtonHover from "../assets/icons/deleteAll-hover.png"
-import clearAllButtonDarkHover from "../assets/icons/clearAll-dark-hover.png"
-import clearAllButtonDark from "../assets/icons/clearAll-dark.png"
-import deleteAllButtonDark from "../assets/icons/deleteAll-dark.png"
-import deleteAllButtonDarkHover from "../assets/icons/deleteAll-dark-hover.png"
+import React, {useEffect, useState} from "react"
 import {useActionSelector} from "../store"
 import "./styles/groupaction.less"
 
@@ -35,43 +27,11 @@ const GroupAction: React.FunctionComponent = (props) => {
         window.ipcRenderer.invoke("delete-all")
     }
 
-    const getImage = (type: string) => {
-        if (type === "clear") {
-            if (color === "light") {
-                if (clearHover) {
-                    return clearAllButtonHover
-                } else {
-                    return clearAllButton
-                }
-            } else {
-                if (clearHover) {
-                    return clearAllButtonDarkHover
-                } else {
-                    return clearAllButtonDark
-                }
-            }
-        } else if (type === "delete") {
-            if (color === "light") {
-                if (deleteHover) {
-                    return deleteAllButtonHover
-                } else {
-                    return deleteAllButton
-                }
-            } else {
-                if (deleteHover) {
-                    return deleteAllButtonDarkHover
-                } else {
-                    return deleteAllButtonDark
-                }
-            }
-        }
-    }
-
     if (clearAll) {
         return (
             <section className="group-action-container">
-                    <img src={getImage("clear")} onClick={clear} className="group-action-button" width="319" height="61" onMouseEnter={() => setClearHover(true)} onMouseLeave={() => setClearHover(false)}/>
-                    <img src={getImage("delete")} onClick={del} className="group-action-button" width="319" height="61" onMouseEnter={() => setDeleteHover(true)} onMouseLeave={() => setDeleteHover(false)}/>
+                <button className="group-action-button" onClick={clear}>{">>Clear All"}</button>
+                <button className="group-action-button" onClick={del}>{">>Delete All"}</button>
             </section>
         )
     }

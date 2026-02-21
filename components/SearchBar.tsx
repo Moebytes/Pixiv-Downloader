@@ -1,8 +1,7 @@
 import React, {useState, useEffect, useRef} from "react"
 import {useSearchSelector, useSearchActions} from "../store"
-import searchButton from "../assets/icons/searchButton.png"
+import SearchIcon from "../assets/svg/search.svg"
 import ErrorMessage from "./ErrorMessage"
-import searchButtonHover from "../assets/icons/searchButton-hover.png"
 import "./styles/searchbar.less"
 
 const SearchBar: React.FunctionComponent = () => {
@@ -75,7 +74,7 @@ const SearchBar: React.FunctionComponent = () => {
                 <div className="search-bar">
                     <input className="search-box" type="search" ref={searchBoxRef} spellCheck="false" placeholder="Pixiv link or query..." onKeyDown={enterSearch}/>
                     <button className="search-button" type="submit" id="submit" onClick={search}>
-                        <img className="search-button-img" src={searchHover ? searchButtonHover : searchButton} onMouseEnter={() => setSearchHover(true)} onMouseLeave={() => setSearchHover(false)}/>
+                        <SearchIcon className="search-button-img"/>
                     </button>
                 </div>
             </div>

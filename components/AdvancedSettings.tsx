@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react"
 import {Dropdown, DropdownButton} from "react-bootstrap"
 import {useSearchSelector, useSearchActions, useActionSelector, useActionActions} from "../store"
-import checkbox from "../assets/icons/checkbox.png"
-import checkboxChecked from "../assets/icons/checkbox-checked.png"
+import CheckboxIcon from "../assets/svg/checkbox.svg"
+import CheckboxCheckedIcon from "../assets/svg/checkbox-checked.svg"
 import "./styles/advancedsettings.less"
 
 const AdvancedSettings: React.FunctionComponent = (props) => {
@@ -235,15 +235,23 @@ const AdvancedSettings: React.FunctionComponent = (props) => {
                             </div>
                             <div className="settings-row">
                                 <p className="settings-text">Translate Titles:</p>
-                                <img className="settings-checkbox-img" src={translateTitles ? checkboxChecked : checkbox} onClick={() => setTranslateTitles(!translateTitles)}/>
+                                {translateTitles ?
+                                <CheckboxCheckedIcon className="settings-checkbox-img" onClick={() => setTranslateTitles(!translateTitles)}/> :
+                                <CheckboxIcon className="settings-checkbox-img" onClick={() => setTranslateTitles(!translateTitles)}/>}
                                 <p className="settings-text" style={{marginLeft: "20px"}}>Flatten Directory:</p>
-                                <img className="settings-checkbox-img" src={flattenDirectory ? checkboxChecked : checkbox} onClick={() => setFlattenDirectory(!flattenDirectory)}/>
+                                {flattenDirectory ?
+                                <CheckboxCheckedIcon className="settings-checkbox-img" onClick={() => setFlattenDirectory(!flattenDirectory)}/> :
+                                <CheckboxIcon className="settings-checkbox-img" onClick={() => setFlattenDirectory(!flattenDirectory)}/>}
                             </div>
                             <div className="settings-row">
                                 <p className="settings-text">Pixiv.moe:</p>
-                                <img className="settings-checkbox-img" src={moe ? checkboxChecked : checkbox} onClick={() => setMoe(!moe)}/>
+                                {moe ?
+                                <CheckboxCheckedIcon className="settings-checkbox-img" onClick={() => setMoe(!moe)}/> :
+                                <CheckboxIcon className="settings-checkbox-img" onClick={() => setMoe(!moe)}/>}
                                 <p className="settings-text" style={{marginLeft: "20px"}}>AI:</p>
-                                <img className="settings-checkbox-img" src={ai ? checkboxChecked : checkbox} onClick={() => setAI(!ai)}/>
+                                {ai ?
+                                <CheckboxCheckedIcon className="settings-checkbox-img" onClick={() => setAI(!ai)}/> :
+                                <CheckboxIcon className="settings-checkbox-img" onClick={() => setAI(!ai)}/>}
                             </div>
                             <div className="settings-row">
                                 <p className="settings-text">Illust Limit: </p>

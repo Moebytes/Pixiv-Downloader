@@ -1,16 +1,12 @@
 import functions from "../structures/functions"
 import React, {useState, useEffect, useRef, useReducer, useContext} from "react"
 import {ProgressBar} from "react-bootstrap"
-import closeContainer from "../assets/icons/closeContainer.png"
-import locationButton from "../assets/icons/location.png"
-import trashButton from "../assets/icons/trash.png"
-import closeContainerHover from "../assets/icons/closeContainer-hover.png"
-import locationButtonHover from "../assets/icons/location-hover.png"
-import trashButtonHover from "../assets/icons/trash-hover.png"
+import CloseContainerIcon from "../assets/svg/close-container.svg"
+import LocationIcon from "../assets/svg/location.svg"
+import TrashIcon from "../assets/svg/trash.svg"
+import BookmarksIcon from "../assets/svg/heart.svg"
+import ViewsIcon from "../assets/svg/views.svg"
 import pSBC from "shade-blend-color"
-import bookmarks from "../assets/icons/bookmarks.png"
-import likes from "../assets/icons/likes.png"
-import views from "../assets/icons/views.png"
 import type {PixivIllust} from "pixiv.ts"
 import {useActionSelector, useSearchSelector} from "../store"
 import path from "path"
@@ -216,11 +212,11 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
                 </div>
                 <div className="illust-stats">
                     <div className="illust-stat">
-                        <img className="illust-stat-img" src={bookmarks}/>
+                        <BookmarksIcon className="illust-stat-img"/>
                         <p className="illust-text">{props.illust.total_bookmarks}</p>
                     </div>
                     <div className="illust-stat">
-                        <img className="illust-stat-img" src={views}/>
+                        <ViewsIcon className="illust-stat-img"/>
                         <p className="illust-text">{props.illust.total_view}</p>
                     </div>
                     <div className="illust-stat">
@@ -232,10 +228,10 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
                 </div>
             </div>
             <div className="illust-buttons">
-                {hover ? <img className="illust-button close-container" width="28" height="28" onMouseDown={(event) => event.stopPropagation()} src={hoverClose ? closeContainerHover : closeContainer} onClick={closeDownload} onMouseEnter={() => setHoverClose(true)} onMouseLeave={() => setHoverClose(false)}/> : null}
+                {hover ? <CloseContainerIcon className="illust-button close-container" onClick={closeDownload}/> : null}
                 <div className="illust-button-row">
-                    {output ? <img className="illust-button" width="50" height="50" onMouseDown={(event) => event.stopPropagation()} src={hoverLocation ? locationButtonHover : locationButton} onClick={openLocation} onMouseEnter={() => setHoverLocation(true)} onMouseLeave={() => setHoverLocation(false)}/> : null}
-                    {output ? <img className="illust-button" width="50" height="50" onMouseDown={(event) => event.stopPropagation()} src={hoverTrash ? trashButtonHover : trashButton} onClick={deleteDownload} onMouseEnter={() => setHoverTrash(true)} onMouseLeave={() => setHoverTrash(false)}/> : null}    
+                    {output ? <LocationIcon className="illust-button" onClick={() => openLocation()}/> : null}
+                    {output ? <TrashIcon className="illust-button" onClick={() => deleteDownload()}/> : null}    
                 </div>
             </div>
             </div>

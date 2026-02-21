@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react"
-import folderButtonHover from "../assets/icons/folder-hover.png"
-import folderButton from "../assets/icons/folder.png"
+import FolderIcon from "../assets/svg/folder.svg"
 import {useSearchSelector, useSearchActions} from "../store"
 import "./styles/directorybar.less"
 
@@ -45,7 +44,7 @@ const DirectoryBar: React.FunctionComponent = (props) => {
     return (
         <section className="directory-bar">
             <div className="directory-bar-center">
-                <img className="directory-bar-img" width="25" height="25" src={folderHover ? folderButtonHover : folderButton} onMouseEnter={() => setFolderHover(true)} onMouseLeave={() => setFolderHover(false)} onClick={changeDirectory}/>
+                <FolderIcon className="directory-bar-img" onClick={changeDirectory}/>
                 <input className="directory-bar-box" type="text" value={directory} onDoubleClick={openDirectory} onChange={updateDirectory}/>
             </div>
         </section>
