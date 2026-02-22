@@ -15,10 +15,6 @@ const SearchBar: React.FunctionComponent = () => {
     const searchBoxRef = useRef(null) as React.RefObject<HTMLInputElement>
     
     useEffect(() => {
-        const triggerPaste = () => {
-            const text = window.clipboard.readText()
-            searchBoxRef.current!.value += text
-        }
         const downloadURL = (event: any, url: string) => {
             if (url) download(url)
         }
@@ -34,14 +30,12 @@ const SearchBar: React.FunctionComponent = () => {
         const updateKind = (event: any, kind: string) => {
             setKind(kind)
         }
-        window.ipcRenderer.on("trigger-paste", triggerPaste)
         window.ipcRenderer.on("download-url", downloadURL)
         window.ipcRenderer.on("update-fetch-text", updateFetchText)
         window.ipcRenderer.on("update-id", updateID)
         window.ipcRenderer.on("update-format", updateFormat)
         window.ipcRenderer.on("update-kind", updateKind)
         return () => {
-            window.ipcRenderer.removeListener("trigger-paste", triggerPaste)
             window.ipcRenderer.removeListener("download-url", downloadURL)
             window.ipcRenderer.removeListener("update-fetch-text", updateFetchText)
             window.ipcRenderer.removeListener("update-id", updateID)

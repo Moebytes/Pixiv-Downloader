@@ -1,4 +1,4 @@
-import {app, BrowserWindow, dialog, globalShortcut, ipcMain, shell, session} from "electron"
+import {app, BrowserWindow, Menu, MenuItemConstructorOptions, dialog, ipcMain, shell, session} from "electron"
 import Store from "electron-store"
 import dragAddon from "electron-click-drag-plugin"
 import path from "path"
@@ -11,6 +11,7 @@ import imageSize from "image-size"
 import axios from "axios"
 import fs from "fs"
 import {URL} from "url"
+import pack from "./package.json"
 
 let webpPath = path.join(app.getAppPath(), "./node_modules/pixiv.ts/webp")
 if (!fs.existsSync(webpPath)) webpPath = path.join(__dirname, "../webp")
@@ -125,10 +126,6 @@ ipcMain.handle("preview", (event, image: string) => {
 
 ipcMain.handle("update-color", (event, color: string) => {
   window?.webContents.send("update-color", color)
-})
-
-ipcMain.handle("trigger-paste", () => {
-  window?.webContents.send("trigger-paste")
 })
 
 ipcMain.handle("delete-all", () => {
@@ -492,6 +489,43 @@ ipcMain.handle("save-os", (event, os: string) => {
   store.set("os", os)
 })
 
+ipcMain.handle("context-menu", (event, {hasSelection}) => {
+  const template: MenuItemConstructorOptions[] = [
+    {label: "Copy", enabled: hasSelection, role: "copy"},
+    {label: "Paste", role: "paste"}
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  const window = BrowserWindow.fromWebContents(event.sender)
+  if (window) menu.popup({window})
+})
+
+const applicationMenu = () =>  {
+  const template: MenuItemConstructorOptions[] = [
+    {role: "appMenu"},
+    {
+      label: "Edit",
+      submenu: [
+        {role: "copy"},
+        {role: "paste"}
+      ]
+    },
+    {role: "windowMenu"},
+    {
+      role: "help",
+      submenu: [
+        {role: "reload"},
+        {role: "forceReload"},
+        {role: "toggleDevTools"},
+        {type: "separator"},
+        {label: "Online Support", click: () => shell.openExternal(pack.repository.url)}
+      ]
+    }
+  ]
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+}
+
 const singleLock = app.requestSingleInstanceLock()
 
 if (!singleLock) {
@@ -506,13 +540,17 @@ if (!singleLock) {
 
   app.on("ready", () => {
     window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, 
-      backgroundColor: "#656ac2", center: true, webPreferences: {
+      show: false, backgroundColor: "#656ac2", center: true, webPreferences: {
       preload: path.join(__dirname, "../preload/index.js")}})
     window.loadFile(path.join(__dirname, "../renderer/index.html"))
     window.removeMenu()
+    applicationMenu()
     if (process.platform === "darwin") {
       //fs.chmodSync(`${webpPath}/img2webp.app`, "777")
     }
+    window.webContents.on("did-finish-load", () => {
+      window?.show()
+    })
     window.on("close", () => {
       website?.close()
     })
