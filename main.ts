@@ -1,4 +1,5 @@
 import {app, BrowserWindow, Menu, MenuItemConstructorOptions, dialog, ipcMain, shell, session} from "electron"
+import localShortcut from "electron-localshortcut"
 import Store from "electron-store"
 import dragAddon from "electron-click-drag-plugin"
 import path from "path"
@@ -95,8 +96,8 @@ ipcMain.handle("download-url", (event, url) => {
 
 const openWebsite = async () => {
   if (!website) {
-    website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, 
-      show: false, backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
+    website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, resizable: true, hasShadow: false,
+      transparent: process.platform !== "win32", show: false, backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
       preload: path.join(__dirname, "../preload/index.js")}})
     await website.loadFile(path.join(__dirname, "../renderer/browser.html"))
     website?.on("closed", () => {
@@ -495,7 +496,7 @@ ipcMain.handle("save-theme", (event, theme: string) => {
 })
 
 ipcMain.handle("get-os", () => {
-  return store.get("os", "mac")
+  return store.get("os", process.platform === "darwin" ? "mac" : "windows")
 })
 
 ipcMain.handle("save-os", (event, os: string) => {
@@ -572,15 +573,16 @@ if (!singleLock) {
   })
 
   app.on("ready", () => {
-    window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, 
-      transparent: true, show: false, backgroundColor: "#00000000", center: true, webPreferences: {
+    window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, resizable: true,
+      transparent: process.platform !== "win32", hasShadow: false, show: false, backgroundColor: "#00000000", center: true, webPreferences: {
       preload: path.join(__dirname, "../preload/index.js")}})
     window.loadFile(path.join(__dirname, "../renderer/index.html"))
     window.removeMenu()
     applicationMenu()
-    if (process.platform === "darwin") {
-      //fs.chmodSync(`${webpPath}/img2webp.app`, "777")
-    }
+    localShortcut.register(window, "Control+Shift+I", () => {
+      window?.webContents.openDevTools()
+      website?.webContents.openDevTools()
+    })
     window.webContents.on("did-finish-load", () => {
       window?.show()
     })
