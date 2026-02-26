@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {useState, useEffect, useEffectEvent, useRef} from "react"
 import {useSearchSelector, useSearchActions} from "../store"
 import SearchIcon from "../assets/svg/search.svg"
 import ErrorMessage from "./ErrorMessage"
@@ -11,8 +11,7 @@ const SearchBar: React.FunctionComponent = () => {
     } = useSearchSelector()
     const {setKind, setFormat, setFetchText} = useSearchActions()
     const [id, setID] = useState(1)
-    const [searchHover, setSearchHover] = useState(false)
-    const searchBoxRef = useRef(null) as React.RefObject<HTMLInputElement>
+    const searchBoxRef = useRef<HTMLInputElement>(null)
     
     useEffect(() => {
         const downloadURL = (event: any, url: string) => {
@@ -50,12 +49,12 @@ const SearchBar: React.FunctionComponent = () => {
         if (searchText) return download(searchText)
     }
 
-    const download = async (query: string) => {
+    const download = useEffectEvent(async (query: string) => {
         await window.ipcRenderer.invoke("search", query, {directory, id, kind, format, template, translate, sort,
             restrict, translateTitles, flattenDirectory, folderMap, speed, reverse, bookmarks, bookmarkFilter,
             target, moe, r18, ai, illustLimit, mangaLimit, ugoiraLimit
         })
-    }
+    })
 
     const enterSearch = (event: React.KeyboardEvent<HTMLElement>) => {
         if (event.key === "Enter") search()
@@ -66,7 +65,8 @@ const SearchBar: React.FunctionComponent = () => {
             <ErrorMessage/>
             <div className="search-location">
                 <div className="search-bar">
-                    <input className="search-box" type="search" ref={searchBoxRef} spellCheck="false" placeholder="Pixiv link or query..." onKeyDown={enterSearch}/>
+                    <input className="search-box" type="search" ref={searchBoxRef} spellCheck="false" 
+                    placeholder="Pixiv link or query..." onKeyDown={enterSearch}/>
                     <button className="search-button" type="submit" id="submit" onClick={search}>
                         <SearchIcon className="search-button-img"/>
                     </button>

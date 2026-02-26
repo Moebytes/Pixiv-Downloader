@@ -1,5 +1,5 @@
 import functions from "../structures/functions"
-import React, {useState, useEffect, useRef, useReducer, useContext} from "react"
+import React, {useState, useEffect, useEffectEvent, useRef, useReducer} from "react"
 import {ProgressBar} from "react-bootstrap"
 import CloseContainerIcon from "../assets/svg/close-container.svg"
 import LocationIcon from "../assets/svg/location.svg"
@@ -8,7 +8,7 @@ import BookmarksIcon from "../assets/svg/heart.svg"
 import ViewsIcon from "../assets/svg/views.svg"
 import pSBC from "shade-blend-color"
 import type {PixivIllust} from "pixiv.ts"
-import {useActionSelector, useSearchSelector} from "../store"
+import {useActionSelector, useSearchSelector, useThemeSelector} from "../store"
 import path from "path"
 import "./styles/illustcontainer.less"
 
@@ -19,14 +19,12 @@ export interface IllustContainerProps {
 }
 
 const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: IllustContainerProps) => {
+    const {theme} = useThemeSelector()
     const {previewVisible} = useActionSelector()
     const {translateTitles} = useSearchSelector()
     const [deleted, setDeleted] = useState(false)
     const [output, setOutput] = useState("")
     const [hover, setHover] = useState(false)
-    const [hoverClose, setHoverClose] = useState(false)
-    const [hoverLocation, setHoverLocation] = useState(false)
-    const [hoverTrash, setHoverTrash] = useState(false)
     const [progressColor, setProgressColor] = useState("")
     const [backgroundColor, setBackgroundColor] = useState("")
     const [clearSignal, setClearSignal] = useState(false)
@@ -34,8 +32,8 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
     const [drag, setDrag] = useState(false)
     const [title, setTitle] = useState(props.illust.title)
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
-    const progressBarRef = useRef(null) as React.RefObject<HTMLDivElement>
-    const illustContainerRef = useRef(null) as React.RefObject<HTMLElement>
+    const progressBarRef = useRef<HTMLDivElement>(null)
+    const illustContainerRef = useRef<HTMLElement>(null)
     
     useEffect(() => {
         const downloadEnded = (event: any, info: {id: number, output: string}) => {
@@ -65,73 +63,61 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
         updateProgressColor()
         updateBackgroundColor()
         updateTitle()
+    })
+
+    useEffect(() => {
         if (clearSignal) {
             if (output) closeDownload()
             setClearSignal(false)
         }
         if (deleteSignal) deleteDownload()
-    })
+    }, [output, clearSignal, deleteSignal])
 
     const updateTitle = async () => {
+        if (title !== props.illust.title) return
         if (translateTitles) {
             const title = await window.ipcRenderer.invoke("translate-title", props.illust.title)
             setTitle(title)
-        } else {
-            setTitle(props.illust.title)
         }
     }
 
-    const deleteDownload = async () => {
+    const deleteDownload = useEffectEvent(async () => {
         if (deleted) return
         setDeleteSignal(false)
         const success = await window.ipcRenderer.invoke("delete-download", props.id)
         if (success) setDeleted(true)
-    }
+    })
 
-    const closeDownload = async () => {
+    const closeDownload = useEffectEvent(async () => {
         if (!output) window.ipcRenderer.invoke("delete-download", props.id)
         props.remove(props.id)
-    }
+    })
 
     const openLocation = async () => {
         window.ipcRenderer.invoke("open-location", output)
     }
 
     const updateBackgroundColor = async () => {
-        const colors = ["#3447f6"]
         const container = illustContainerRef.current?.querySelector(".illust-container") as HTMLElement
         if (!container) return
-        if (!backgroundColor) {
+        const colors = theme === "light" ? ["#6c9aff"] : ["#2c3c83"]
+
+        if (!colors.includes(backgroundColor)) {
             const color = colors[Math.floor(Math.random() * colors.length)]
             setBackgroundColor(color)
         }
-        const theme = await window.ipcRenderer.invoke("get-theme")
-        if (theme === "light") {
-            const text = illustContainerRef.current?.querySelectorAll(".illust-text, .illust-text-alt") as NodeListOf<HTMLElement>
-            text.forEach((t) => {
-                t.style.color = "black"
-            })
-            container.style.backgroundColor = backgroundColor
-            container.style.border = `2px solid ${pSBC(0.4, backgroundColor)}`
-        } else {
-            const text = illustContainerRef.current?.querySelectorAll(".illust-text, .illust-text-alt") as NodeListOf<HTMLElement>
-            text.forEach((t) => {
-                t.style.color = backgroundColor
-            })
-            container.style.backgroundColor = "#090409"
-            container.style.border = `2px solid #090409`
-        }
+
+        container.style.backgroundColor = backgroundColor
+        container.style.border = `2px solid ${pSBC(0.4, backgroundColor)}`
     }
 
     const updateProgressColor = () => {
-        const colors = ["#214dff"]
         const progressBar = progressBarRef.current?.querySelector(".progress-bar") as HTMLElement
         if (!output) {
-             setProgressColor("#214dff")
+             setProgressColor("#5e7eff")
         } else {
-            // if (progressColor === "#214dff") setProgressColor(colors[Math.floor(Math.random() * colors.length)])
-            if (output) setProgressColor("#3e63fa")
-            if (deleted) setProgressColor("#6721ff")
+            if (output) setProgressColor("#8fa5ff")
+            if (deleted) setProgressColor("#9b6eff")
         }
         progressBar.style.backgroundColor = progressColor
     }
@@ -173,6 +159,8 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
     }
 
     const preview = (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault()
+        event.stopPropagation()
         const source = getImage()
         if (!drag) window.ipcRenderer.invoke("preview", source)
     }
@@ -230,8 +218,8 @@ const IllustContainer: React.FunctionComponent<IllustContainerProps> = (props: I
             <div className="illust-buttons">
                 {hover ? <CloseContainerIcon className="illust-button close-container" onClick={closeDownload}/> : null}
                 <div className="illust-button-row">
-                    {output ? <LocationIcon className="illust-button" onClick={() => openLocation()}/> : null}
-                    {output ? <TrashIcon className="illust-button" onClick={() => deleteDownload()}/> : null}    
+                    {output ? <LocationIcon className="illust-button" onClick={() => openLocation()} style={{color: "var(--locationButton)"}}/> : null}
+                    {output ? <TrashIcon className="illust-button" onClick={() => deleteDownload()} style={{color: "var(--trashButton)"}}/> : null}    
                 </div>
             </div>
             </div>

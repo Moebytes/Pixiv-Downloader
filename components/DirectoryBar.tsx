@@ -5,7 +5,6 @@ import "./styles/directorybar.less"
 
 const DirectoryBar: React.FunctionComponent = (props) => {
     const [defaultDir, setDefaultDir] = useState("")
-    const [folderHover, setFolderHover] = useState(false)
     const {directory} = useSearchSelector()
     const {setDirectory} = useSearchActions()
 
@@ -28,13 +27,8 @@ const DirectoryBar: React.FunctionComponent = (props) => {
 
     const updateDirectory = (event: React.ChangeEvent<HTMLInputElement>) => {
         const dir = event.target.value.replace(/\\/g, "/")
-        if (!dir.includes(defaultDir)) {
-            setDirectory(defaultDir)
-            window.ipcRenderer.invoke("select-directory", defaultDir)
-        } else {
-            setDirectory(dir)
-            window.ipcRenderer.invoke("select-directory", dir)
-        }
+        setDirectory(dir)
+        window.ipcRenderer.invoke("select-directory", dir)
     }
 
     const openDirectory = () => {

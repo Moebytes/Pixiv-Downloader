@@ -20,7 +20,7 @@
 .search-bar {
     display: flex;
     width: 100%;
-    outline: var(--textColor) 2px;
+    outline: var(--textColor2) 2px;
 }
 
 .search-box {
@@ -28,26 +28,29 @@
     width: 100%;
     height: @search-height;
     background-color: var(--searchBG);
-    color: var(--textColor);
+    color: var(--textColor2);
     font-size: 25px;
     font-family: "GenEi M Gothic v2", sans-serif;
 }
 
 .search-box::placeholder {
-    color: var(--textColor);
+    color: var(--textColor2);
     font-size: 25px;
     font-family: "GenEi M Gothic v2", sans-serif;
 }
 
 .search-button {
-    user-select: none;
     border: none;
-    cursor: pointer;
     height: @search-height;
     width: @search-height;
+    background-color: var(--searchButton);
 }
 
 .search-button-img {
     width: @search-height;
     height: @search-height;
+    color: var(--textColor2);
+    &:hover {
+        color: white;
+    }
 }

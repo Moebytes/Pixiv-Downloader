@@ -1,13 +1,18 @@
 import React, {useEffect} from "react"
 import {createRoot} from "react-dom/client"
+import {useThemeSelector, useThemeActions} from "./reducers/themeReducer"
 import {Provider} from "react-redux"
 import store from "./store"
 import BrowserTitleBar from "./components/BrowserTitleBar"
 import LocalStorage from "./LocalStorage"
 import functions from "./structures/functions"
+import {OS} from "./reducers/themeReducer"
 import "./browser.less"
 
 const App: React.FunctionComponent = () => {
+    const {os} = useThemeSelector()
+    const {setOS} = useThemeActions()
+
     useEffect(() => {
         const webview = document.getElementById("webview") as any
         const navigateHome = () => {
@@ -22,10 +27,21 @@ const App: React.FunctionComponent = () => {
             }
             webview?.removeEventListener("dom-ready", ready)
         }
+        const initTheme = async () => {
+            const os = await window.ipcRenderer.invoke("get-os")
+            setOS(os)
+            window.ipcRenderer.invoke("ready-to-show")
+        }
+        const updateTheme = (event: any, os: OS) => {
+            setOS(os)
+        }
+        initTheme()
         webview?.addEventListener("dom-ready", ready)
         window.ipcRenderer.on("navigate-home", navigateHome)
+        window.ipcRenderer.on("update-theme", updateTheme)
         return () => {
             window.ipcRenderer.removeListener("navigate-home", navigateHome)
+            window.ipcRenderer.removeListener("update-theme", updateTheme)
         }
     }, [])
 

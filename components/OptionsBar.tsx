@@ -1,6 +1,8 @@
 import React, {useEffect} from "react"
 import {Dropdown, DropdownButton} from "react-bootstrap"
 import {useSearchSelector, useSearchActions} from "../store"
+import CheckboxIcon from "../assets/svg/checkbox.svg"
+import CheckboxCheckedIcon from "../assets/svg/checkbox-checked.svg"
 import "./styles/optionsbar.less"
 
 const OptionsBar: React.FunctionComponent = () => {
@@ -76,7 +78,7 @@ const OptionsBar: React.FunctionComponent = () => {
     return (
         <section className="options-bar">
             <div className="options-bar-box">
-                <p className="options-bar-text">kind: </p>
+                <p className="options-bar-text">Kind: </p>
                 <DropdownButton title={kind} drop="down">
                     <Dropdown.Item active={kind === "illust"} onClick={() => handleKind("illust")}>illust</Dropdown.Item>
                     <Dropdown.Item active={kind === "manga"} onClick={() => handleKind("manga")}>manga</Dropdown.Item>
@@ -85,7 +87,7 @@ const OptionsBar: React.FunctionComponent = () => {
                 </DropdownButton>
             </div>
             <div className="options-bar-box">
-                <p className="options-bar-text">format: </p>
+                <p className="options-bar-text">Format: </p>
                 {kind === "ugoira" ? 
                 <DropdownButton title={format} drop="down">
                     <Dropdown.Item active={format === "gif"} onClick={() => setFormat("gif")}>gif</Dropdown.Item>
@@ -104,19 +106,25 @@ const OptionsBar: React.FunctionComponent = () => {
                 }
             </div>
             <div className="options-bar-box">
-                <input className="options-bar-checkbox" type="checkbox" checked={translate} onClick={handleTranslate}/>
-                <p className="options-bar-text pointer" onClick={handleTranslate}>translate</p>
+                {translate ? 
+                <CheckboxCheckedIcon className="options-bar-checkbox" onClick={handleTranslate}/> :
+                <CheckboxIcon className="options-bar-checkbox" onClick={handleTranslate}/>}
+                <p className="options-bar-text pointer" onClick={handleTranslate}>Translate</p>
             </div>
             <div className="options-bar-box">
-                <input className="options-bar-checkbox" type="checkbox" checked={r18} onClick={handleR18}/>
-                <p className="options-bar-text pointer" onClick={handleR18}>r18</p>
+                {r18 ? 
+                <CheckboxCheckedIcon className="options-bar-checkbox" onClick={handleR18}/> :
+                <CheckboxIcon className="options-bar-checkbox" onClick={handleR18}/>}
+                <p className="options-bar-text pointer" onClick={handleR18}>R18</p>
             </div>
             <div className="options-bar-box">
-                <input className="options-bar-checkbox" type="checkbox" checked={reverse} onClick={handleReverse}/>
-                <p className="options-bar-text pointer" onClick={handleReverse}>reverse</p>
+                {reverse ? 
+                <CheckboxCheckedIcon className="options-bar-checkbox" onClick={handleReverse}/> :
+                <CheckboxIcon className="options-bar-checkbox" onClick={handleReverse}/>}
+                <p className="options-bar-text pointer" onClick={handleReverse}>Reverse</p>
             </div>
             <div className="options-bar-box">
-                <p className="options-bar-text">speed: </p>
+                <p className="options-bar-text">Speed: </p>
                 <input className="options-bar-input" type="text" min="0.5" max="100" value={speed} onChange={handleSpeed} onKeyDown={handleSpeedKey}/>
             </div>
         </section>

@@ -4,6 +4,7 @@ import {Themes, OS} from "./reducers/themeReducer"
 
 const lightColorList = {
 	"--iconColor": "#4b7bff",
+	"--titleActive": "#3842ff",
 	"--maximizeButton": "#2eafff",
 	"--minimizeButton": "#3992ff",
 	"--closeButton": "#4973ff",
@@ -33,6 +34,7 @@ const lightColorList = {
 
 const darkColorList = {
 	"--iconColor": "#4b7bff",
+	"--titleActive": "#3842ff",
 	"--maximizeButton": "#2eafff",
 	"--minimizeButton": "#3992ff",
 	"--closeButton": "#4973ff",
@@ -61,25 +63,38 @@ const darkColorList = {
 }
 
 const LocalStorage: React.FunctionComponent = () => {
-    const {theme, os} = useThemeSelector()
-    const {setTheme, setOS} = useThemeActions()
+    const {theme, os, transparent, pinned} = useThemeSelector()
+    const {setTheme, setOS, setTransparent, setPinned} = useThemeActions()
 
     useEffect(() => {
         if (typeof window === "undefined") return
         const colorList = theme.includes("light") ? lightColorList : darkColorList
+
         for (let i = 0; i < Object.keys(colorList).length; i++) {
             const key = Object.keys(colorList)[i]
             const color = Object.values(colorList)[i]
             document.documentElement.style.setProperty(key, color)
         }
-    }, [theme])
+
+		if (transparent) {
+            document.documentElement.style.setProperty("--background", "transparent")
+            document.documentElement.style.setProperty("--navColor", "transparent")
+        }
+    }, [theme, transparent])
 
     useEffect(() => {
         const initTheme = async () => {
             const savedTheme = await window.ipcRenderer.invoke("get-theme")
             if (savedTheme) setTheme(savedTheme as Themes)
         }
+		const updateTheme = (event: any, os: OS) => {
+			setOS(os)
+		}
         initTheme()
+		window.ipcRenderer.on("update-theme", updateTheme)
+		return () => {
+			window.ipcRenderer.removeListener("update-theme", updateTheme)
+		}
     }, [])
 
     useEffect(() => {

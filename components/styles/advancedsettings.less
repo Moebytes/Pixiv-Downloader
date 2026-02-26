@@ -52,11 +52,6 @@
     color: var(--textColor);
     font-size: 20px;
     font-family: "GenEi M Gothic v2", sans-serif;
-    user-select: text;
-    cursor: text;
-    &::selection {
-        background-color: #846eff;
-    }
 }
 
 .settings-row-container {
@@ -79,15 +74,10 @@
 }
 
 .settings-text {
-    user-select: text;
-    cursor: text;
     color: var(--textColor);
-    font-family: "GenEi M Gothic v2", sans-serif;
+    font-family: "Honoka Shin Antique-Kaku", sans-serif;
     font-size: 15px;
     width: 30%;
-    &::selection {
-        background-color: #846eff;
-    }
 }
 
 .dropdown {
@@ -99,25 +89,15 @@
     border: none;
     margin-left: 10px;
     width: 100%;
-    font-family: "GenEi M Gothic v2", sans-serif;
+    font-family: "Honoka Shin Antique-Kaku", sans-serif;
     font-size: 15px;
     background-color: transparent;
-    &::selection {
-        background-color: #846eff;
-    }
 }
 
 .settings-checkbox {
-    cursor: pointer;
-    border: none;
-    transform: scale(1.5);
-    filter: hue-rotate(30deg);
-}
-
-.settings-checkbox-img {
     width: auto;
     height: 18px;
-    cursor: pointer;
+    color: var(--checkboxColor);
 }
 
 .settings-button-container {
@@ -139,11 +119,10 @@
     font-size: 20px;
     font-family: "GenEi M Gothic v2", sans-serif;
     background-color: var(--deleteAllButton);
-    border: 3px solid var(--textColor);
+    border: 2px solid var(--textColor);
     &:hover {
         color: white;
-        border: 3px solid white;
-        cursor: pointer;
+        border: 2px solid white;
     }
 }
 
@@ -157,11 +136,10 @@
     font-size: 20px;
     font-family: "GenEi M Gothic v2", sans-serif;
     background-color: var(--clearAllButton);
-    border: 3px solid var(--textColor);
+    border: 2px solid var(--textColor);
     &:hover {
         color: white;
-        border: 3px solid white;
-        cursor: pointer;
+        border: 2px solid white;
     }
 }
 
@@ -177,12 +155,11 @@
     color: black;
     font-size: 15px;
     font-family: "GenEi M Gothic v2", sans-serif;
-    background-color: #303bdb;
-    border: 2px solid black;
+    background-color: var(--iconColor);
+    border: 1px solid black;
     &:hover {
         color: white;
-        border: 2px solid white;
-        cursor: pointer;
+        border: 1px solid white;
     }
 }
 
@@ -191,7 +168,6 @@
     color: var(--textColor);
     font-size: 15px;
     font-family: "GenEi M Gothic v2", sans-serif;
-    user-select: text;
 }
 
 .left-margin {

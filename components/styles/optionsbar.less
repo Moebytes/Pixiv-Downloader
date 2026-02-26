@@ -19,16 +19,14 @@
 
 .options-bar-text {
     color: var(--textColor);
-    font-size: 23px;
+    font-size: 20px;
     font-family: "GenEi M Gothic v2", sans-serif;
-    cursor: text;
-    user-select: text;
 }
 
 .options-bar-input {
     margin-left: 6px;
     color: var(--textColor);
-    font-size: 23px;
+    font-size: 20px;
     font-family: "GenEi M Gothic v2", sans-serif;
     height: 30px;
     width: 40px;
@@ -43,39 +41,37 @@
 }
 
 .options-bar-checkbox {
-    border: none;
-    cursor: pointer;
-    transform: scale(1.5);
+    width: auto;
+    height: 20px;
+    color: var(--checkboxColor);
     margin-right: 10px;
 }
 
 .btn {
-    color: black;
+    color: var(--textColor);
     font-size: 17px;
     font-family: "GenEi M Gothic v2", sans-serif;
     padding: 1px 3px;
-    background-color: #4f4dd9;
+    background-color: var(--iconColor);
+    cursor: default !important;
     border-color: transparent;
     margin-left: 10px;
     margin-right: 10px;
-    &:hover {
-        border-color: transparent;
-        background-color: #4f4dd9;
-    }
-    &:focus {
-        color: black !important;
-        border-color: transparent !important;
-        background-color: #4f4dd9 !important;
-        box-shadow: none !important;
-    }
+}
+
+.btn-primary:hover {
+    color: var(--hoverColor) !important;
+    border-color: transparent !important;
+    background-color: var(--iconColor) !important;
+    box-shadow: none !important;
 }
 
 .dropdown-toggle {
-    color: black !important;
+    color: var(--textColor) !important;
     border-color: transparent !important;
-    background-color: #4f4dd9 !important;
+    background-color: var(--iconColor) !important;
     &:hover {
-        color: white !important;
+        color: var(--hoverColor) !important;
     }
     &::after {
         content: none !important; 
@@ -83,26 +79,23 @@
 }
 
 .dropdown-menu {
-    background-color: #494bb4;
+    background-color: var(--iconColor);
     min-width: 0;
     padding: 0;
     border: none;
 }
 
 .dropdown-item {
-    color: black;
+    color: var(--textColor);
+    cursor: default !important;
     font-size: 15px;
     font-family: "GenEi M Gothic v2", sans-serif;
     padding: 3px 2px;
     &:hover {
-        background-color: #92a0f3;
+        background-color: var(--dropdownHover);
     }
 }
 
 .dropdown-item.active, .dropdown-item:active {
-    background-color: #4f4dd9;
-}
-
-.pointer {
-    cursor: pointer;
+    background-color: var(--iconColor);
 }

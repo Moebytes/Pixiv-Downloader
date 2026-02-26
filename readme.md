@@ -48,8 +48,6 @@ For better accuracy provide the tags in Japanese, but they will be automatically
 
 Our design is available here: https://www.figma.com/design/utGtwyDdkigOGlfYjFYQiD/Pixiv-Fetcher
 
-*New design is wip
-
 ### Installation
 
 Download from [releases](https://github.com/Moebytes/Pixiv-Fetcher/releases).

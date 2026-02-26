@@ -55,6 +55,18 @@ ipcMain.on("moveWindow", (event) => {
   dragAddon.startDrag(windowID)
 })
 
+ipcMain.handle("shell:openPath", (event, location: string) => {
+  shell.openPath(path.normalize(location))
+})
+
+ipcMain.handle("shell:openExternal", (event, url: string) => {
+  shell.openExternal(path.normalize(url))
+})
+
+ipcMain.handle("shell:showItemInFolder", (event, location: string) => {
+  shell.showItemInFolder(path.normalize(location))
+})
+
 ipcMain.handle("delete-cookies", () => {
   session.defaultSession.clearStorageData()
   store.delete("refreshToken")
@@ -84,7 +96,7 @@ ipcMain.handle("download-url", (event, url) => {
 const openWebsite = async () => {
   if (!website) {
     website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, 
-      backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
+      show: false, backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
       preload: path.join(__dirname, "../preload/index.js")}})
     await website.loadFile(path.join(__dirname, "../renderer/browser.html"))
     website?.on("closed", () => {
@@ -95,6 +107,10 @@ const openWebsite = async () => {
     website.focus()
   }
 }
+
+ipcMain.handle("ready-to-show", () => {
+    website?.show()
+})
 
 ipcMain.handle("open-url", async (event, url: string) => {
   await openWebsite()
@@ -223,16 +239,12 @@ const download = async (info: {id: number, illust: PixivIllust, dest: string, fo
   window?.webContents.send("download-ended", {id, output: dest})
 }
 
-const downloadItems = async (items: any) => {
-  let promises = [] as any
-  items.map((item: any) => {
-    const promise = new Promise<void>(async (resolve) => {
+const downloadItems = async (items: any[]) => {
+  await Promise.all(
+    items.map(async (item) => {
       await download(item)
-      resolve()
     })
-    promises.push(promise)
-  })
-  await Promise.all(promises)
+  )
 }
 
 interface SearchInfo {
@@ -274,6 +286,7 @@ const updateFormat = (illust: PixivIllust | PixivNovel, format: string) => {
             return "png"
         }
     }
+    return format
 }
 
 const parseDest = async (illust: PixivIllust, info: SearchInfo, newFormat?: string) => {
@@ -296,7 +309,7 @@ const search = async (query: string, info: SearchInfo) => {
   } = info
   const refreshToken = store.get("refreshToken", "") as string
   if (!refreshToken) return window?.webContents.send("download-error", "login")
-  const pixiv = await Pixiv.refreshLogin(refreshToken)
+  pixiv = await Pixiv.refreshLogin(refreshToken)
   let illustID = /\d{5,}/.test(query) ? Number(query.match(/\d{5,}/)?.[0]) : null
   if (!illustID) illustID = /\d{3,}/.test(query) ? Number(query.match(/\d{3,}/)?.[0]) : null
   if (illustID) {
@@ -353,7 +366,7 @@ const search = async (query: string, info: SearchInfo) => {
               let image = illust.meta_single_page.original_image_url ? illust.meta_single_page.original_image_url : illust.image_urls.large 
               if (!image) image = illust.image_urls.medium
               const dest = await parseDest(illust, info, newFormat)
-              await downloadItems([{id: current, illust, dest, format, speed, reverse, template, translateTitles}])
+              await downloadItems([{id: current, illust, dest, format: newFormat, speed, reverse, template, translateTitles}])
               window?.webContents.send("update-id", current + 1)
           } catch (e) {
               console.log(e)
@@ -487,6 +500,26 @@ ipcMain.handle("get-os", () => {
 
 ipcMain.handle("save-os", (event, os: string) => {
   store.set("os", os)
+  window?.webContents.send("update-theme", os)
+  website?.webContents.send("update-theme", os)
+})
+
+ipcMain.handle("get-transparent", () => {
+  return store.get("transparent", false)
+})
+
+ipcMain.handle("save-transparent", (event, transparent: boolean) => {
+  store.set("transparent", transparent)
+})
+
+ipcMain.handle("get-pinned", () => {
+  return store.get("pinned", false)
+})
+
+ipcMain.handle("save-pinned", (event, pinned: boolean) => {
+  store.set("pinned", pinned)
+  window?.setAlwaysOnTop(pinned)
+  website?.setAlwaysOnTop(pinned)
 })
 
 ipcMain.handle("context-menu", (event, {hasSelection}) => {
@@ -540,7 +573,7 @@ if (!singleLock) {
 
   app.on("ready", () => {
     window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, 
-      show: false, backgroundColor: "#656ac2", center: true, webPreferences: {
+      transparent: true, show: false, backgroundColor: "#00000000", center: true, webPreferences: {
       preload: path.join(__dirname, "../preload/index.js")}})
     window.loadFile(path.join(__dirname, "../renderer/index.html"))
     window.removeMenu()

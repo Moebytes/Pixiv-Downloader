@@ -12,7 +12,7 @@ declare global {
     shell: {
       openPath: (path: string) => Promise<string>
       openExternal: (url: string) => Promise<void>
-      showItemInFolder: (path: string) => void
+      showItemInFolder: (path: string) => Promise<void>
     }
   }
 }
@@ -37,9 +37,9 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
 })
 
 contextBridge.exposeInMainWorld("shell", {
-    openPath: async (path: string) => shell.openPath(path),
-    openExternal: async (url: string) => shell.openExternal(url),
-    showItemInFolder: (path: string) => shell.showItemInFolder(path)
+    openPath: async (location: string) => ipcRenderer.invoke("shell:openPath", location),
+    openExternal: async (url: string) => ipcRenderer.invoke("shell:openExternal", url),
+    showItemInFolder: async (location: string) => ipcRenderer.invoke("shell:showItemInFolder", location)
 })
 
 contextBridge.exposeInMainWorld("platform", process.platform === "darwin" ? "mac" : "windows")

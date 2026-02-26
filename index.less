@@ -16,7 +16,10 @@
 @title-bar-height: 30px;
 
 :root {
-    --selectionColor: #6f4af3;
+    --selectionColor: #a8abff;
+	--titleActive: #3842ff;
+    --hoverColor: #ffffff;
+    --dropdownHover: #848aff;
 	--iconColor: #4b7bff;
 	--maximizeButton: #2eafff;
 	--minimizeButton: #3992ff;
@@ -122,20 +125,8 @@ p {
     color: white;
 }
 
-::-webkit-scrollbar {
-    width: 20px;
-}
-  
-::-webkit-scrollbar-track {
-    background: #000000;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #5a5a5a;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #303030;
+*::-webkit-scrollbar {
+    display: none;
 }
 
 input[type="search"]::-webkit-search-decoration,
@@ -161,30 +152,16 @@ img {
     image-rendering: -webkit-optimize-contrast;
 }
 
-ul {
-    list-style-type: none;
+ul, li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-input[type="checkbox"] {
-    appearance: none;
-    border: none;
-    height: 13px;
-    width: 13px;
-    font-size: 16px; 
-    position: relative;
-    background: white;
-    border-radius: 2px;
-    &:checked::before {
-        content: '\2713'; 
-        background: #334eff;
-        width: 100%; 
-        height: 100%; 
-        top: 0;
-        left: 0;
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        color: white; 
-        font-weight: bold;
-    }
+button {
+	border: none;
+	outline: none;
+	&:hover {
+		cursor: default !important;
+	}
 }
