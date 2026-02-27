@@ -98,7 +98,7 @@ ipcMain.handle("download-url", (event, url) => {
 const openWebsite = async () => {
   if (!website) {
     website = new BrowserWindow({width: 800, height: 650, minWidth: 790, minHeight: 550, frame: false, resizable: true, hasShadow: false,
-      transparent: process.platform !== "win32", show: false, backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
+      transparent: initialTransparent, show: false, backgroundColor: "#ffffff", center: false, webPreferences: {webviewTag: true,
       preload: path.join(__dirname, "../preload/index.js")}})
     await website.loadFile(path.join(__dirname, "../renderer/browser.html"))
     website?.on("closed", () => {
@@ -575,7 +575,7 @@ if (!singleLock) {
 
   app.on("ready", () => {
     window = new BrowserWindow({width: 800, height: 600, minWidth: 720, minHeight: 600, frame: false, resizable: true,
-      transparent: process.platform !== "win32", hasShadow: false, show: false, backgroundColor: "#00000000", center: true, webPreferences: {
+      transparent: initialTransparent, hasShadow: false, show: false, backgroundColor: "#00000000", center: true, webPreferences: {
       preload: path.join(__dirname, "../preload/index.js")}})
     window.loadFile(path.join(__dirname, "../renderer/index.html"))
     window.removeMenu()
