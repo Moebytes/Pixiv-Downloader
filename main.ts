@@ -21,6 +21,7 @@ process.setMaxListeners(0)
 let window: Electron.BrowserWindow | null
 let website: Electron.BrowserWindow | null
 const store = new Store()
+let initialTransparent = process.platform === "win32" ? store.get("transparent", false) as boolean : true
 
 let pixiv = null as unknown as Pixiv
 let code_verifier = ""
