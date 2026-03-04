@@ -1,7 +1,7 @@
 {
   "name": "pixiv-fetcher",
   "version": "1.0.0",
-  "description": "An app that downloads images & ugoira from Pixiv",
+  "description": "A Pixiv downloader!",
   "main": "dist/main/index.js",
   "scripts": {
     "start": "npm run clean && rsbuild build && electron dist/main/index.js",
